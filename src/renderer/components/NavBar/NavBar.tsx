@@ -16,6 +16,8 @@ import {useLocation} from 'react-router-dom'
 import NavBarLink from './NavBarLink'
 import NavbarUpdateAvailable from './NavbarUpdateAvailable'
 
+const isDev = window.electron.isDev
+
 export default function NavBar() {
   const {isAuthenticated, user, signOut} = useSession()
   const {STATUS_PATH, ROOT_PATH} = useRoutePaths()
@@ -39,10 +41,12 @@ export default function NavBar() {
           {open ? <MdClose /> : <MdMenu />}
         </IconButton>
         <HStack gap={6} alignItems="center">
-          <Box><Image src={imgUrl} height="8"></Image></Box>
+          <Box>
+            <Image src={imgUrl} height="8"></Image>
+          </Box>
           <HStack as="nav" gap={4} display={{base: 'none', md: 'flex'}}>
             <NavBarLink href={ROOT_PATH}>Pieces</NavBarLink>
-            <NavBarLink href={STATUS_PATH}>Status</NavBarLink>
+            {isDev && (<NavBarLink href={STATUS_PATH}>Status</NavBarLink>)}
           </HStack>
         </HStack>
         <Flex alignItems="center" gap="2">

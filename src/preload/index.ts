@@ -3,6 +3,7 @@ import {electronAPI} from '@electron-toolkit/preload'
 import {contextBridge, ipcRenderer} from 'electron'
 
 const electron = {
+  isDev: electronAPI.process.env.NODE_ENV_ELECTRON_VITE === 'development', //  || electronAPI.process.env.NODE_ENV === 'development'
   beep: (): void => ipcRenderer.send('app:beep'),
 
   reveal: (path: string = ''): void => ipcRenderer.send('reveal', path),
@@ -23,11 +24,11 @@ const electron = {
 }
 
 // Custom APIs for renderer
-const api = {
-  foo() {
-    return 42
-  },
-}
+// const api = {
+//   foo() {
+//     return 42
+//   },
+// }
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -36,7 +37,7 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electron)
     contextBridge.exposeInMainWorld('electronApi', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    // contextBridge.exposeInMainWorld('api', api)
   }
   catch (error) {
     console.error(error)
@@ -45,5 +46,5 @@ if (process.contextIsolated) {
 else {
   globalThis.electronApi = electronAPI
   globalThis.electron = electron
-  globalThis.api = api
+  // globalThis.api = api
 }
