@@ -1,36 +1,16 @@
-import {setTimeout as delay} from 'node:timers/promises'
 import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
-import {Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
-import {Interval, Timeout} from '@nestjs/schedule'
+import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
+import {Interval} from '@nestjs/schedule'
 import {net} from 'electron'
-import electronUpdater, {UpdateInfo} from 'electron-updater'
 import isOnline from 'is-online'
 
-const autoUpdater = electronUpdater.autoUpdater
-autoUpdater.autoDownload = false
-autoUpdater.forceDevUpdateConfig = true
-autoUpdater.setFeedURL({
-  provider: 'github',
-  updaterCacheDirName: 'freeway',
-  owner: 'freeway-rbx',
-  repo: 'freeway',
-})
-
-class UpdaterLogger extends Logger {
-  info(msg, ...args) {
-    return this.log(msg, ...args)
-  }
-}
-
 @Injectable()
-export class AppService implements OnModuleInit, OnModuleDestroy {
+export class AppService implements OnModuleInit {
   private logger = new Logger(AppService.name)
   private isNetOnline = false
   private _isOnline = false
   private isRefreshing = false
-  private updateInfo: UpdateInfo = null
-  private flashFrameTimeout: number | undefined
 
   constructor(
     private readonly oauthClient: RobloxOauthClient,
@@ -54,52 +34,6 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
     //       mainWin.webContents.send('ipc-message', {name: 'ready'})
     //     }
     //   })
-
-    autoUpdater.logger = new UpdaterLogger('AutoUpdater')
-    autoUpdater.on('update-available', (updateInfo) => {
-      this.updateInfo = updateInfo
-      this.logger.log('---- UPDATE AVAILABLE ----', updateInfo)
-      this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:update-available', data: updateInfo})
-    })
-  }
-
-  async onModuleDestroy(): Promise<void> {
-    clearTimeout(this.flashFrameTimeout)
-  }
-
-  get isUpdateAvailable() {
-    return this.updateInfo !== null
-  }
-
-  getUpdateInfo(): UpdateInfo {
-    return this.updateInfo
-  }
-
-  @Timeout(1_000)
-  protected async timeoutCheckForUpdate(): Promise<void> {
-    await this.checkForUpdate()
-  }
-
-  @Interval(120_000)
-  protected async intervalCheckForUpdate(): Promise<void> {
-    await this.checkForUpdate()
-  }
-
-  @Interval(20_000)
-  protected async intervalFlashFrameCheckForUpdate(): Promise<void> {
-    if (this.isUpdateAvailable) {
-      this.electronService.getMainWindow()?.flashFrame(true)
-      await delay(10_000)
-      this.electronService.getMainWindow()?.flashFrame(false)
-    }
-  }
-
-  protected async checkForUpdate(): Promise<void> {
-    if (this.isUpdateAvailable) {
-      return
-    }
-
-    await autoUpdater.checkForUpdatesAndNotify()
   }
 
   @Interval(1000)

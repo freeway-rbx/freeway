@@ -5,6 +5,7 @@ import {contextBridge, ipcRenderer} from 'electron'
 const electron = {
   isDev: electronAPI.process.env.NODE_ENV_ELECTRON_VITE === 'development', //  || electronAPI.process.env.NODE_ENV === 'development'
   beep: (): void => ipcRenderer.send('app:beep'),
+  appUpdate: (): void => ipcRenderer.send('app:update'),
 
   reveal: (path: string = ''): void => ipcRenderer.send('reveal', path),
 

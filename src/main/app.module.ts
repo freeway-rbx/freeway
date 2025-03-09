@@ -3,6 +3,7 @@ import {ConfigModule} from '@nestjs/config'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {ScheduleModule} from '@nestjs/schedule'
 import {configuration} from './_config/configuration'
+import {AppUpdaterModule} from './app-updater/app-updater.module'
 import {AppController} from './app.controller'
 import {AppService} from './app.service'
 import {AuthModule} from './auth/auth.module'
@@ -15,6 +16,8 @@ import {TestModule} from './test/test.module'
 
 @Module({
   imports: [
+    AppUpdaterModule,
+    ElectronModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -29,7 +32,6 @@ import {TestModule} from './test/test.module'
     RobloxApiModule,
     PieceModule,
     PluginModule,
-    ElectronModule,
   ],
   controllers: [AppController],
   providers: [AppService],
