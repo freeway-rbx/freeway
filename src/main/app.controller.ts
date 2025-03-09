@@ -1,6 +1,5 @@
 import {IpcOn} from '@doubleshot/nest-electron'
 import {ConfigurationPiece} from '@main/_config/configuration'
-import {AppService} from '@main/app.service'
 import {Controller, Get} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {Payload} from '@nestjs/microservices'
@@ -10,7 +9,6 @@ import {shell} from 'electron'
 export class AppController {
   constructor(
     private config: ConfigService,
-    private service: AppService,
   ) {
   }
 
@@ -45,13 +43,5 @@ export class AppController {
   @Get('/')
   public root() {
     return {message: 'hello'}
-  }
-
-  @Get('/api/app/update-info')
-  public async getUpdateInfo() {
-    return {
-      updateInfo: this.service.getUpdateInfo(),
-      isUpdateAvailable: this.service.isUpdateAvailable,
-    }
   }
 }

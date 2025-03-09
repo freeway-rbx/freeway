@@ -19,7 +19,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {Button, Link, Text} from '@chakra-ui/react'
+import {Button, Flex, Link, Text} from '@chakra-ui/react'
 
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
@@ -30,7 +30,7 @@ export default function NavbarUpdateAvailable() {
   const [updateInfo, setUpdateInfo] = useState<any>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  useCustomEventListener<any>('app:update-available', async (data) => {
+  useCustomEventListener<any>('app-updater:update-available', async (data) => {
     setIsUpdateAvailable(true)
     setUpdateInfo(data)
   })
@@ -64,6 +64,10 @@ export default function NavbarUpdateAvailable() {
     console.log(e.open)
   }
 
+  const onUpdate = (_ev) => {
+    window.electron.appUpdate()
+  }
+
   if (!isUpdateAvailable) {
     return null
   }
@@ -88,10 +92,17 @@ export default function NavbarUpdateAvailable() {
               <Link variant="underline" href={uriRelease} target="_blank">version {updateInfo.version}</Link>
               <span> is available.</span>
               <br />
-              <span>Please </span>
-              <Link variant="underline" href={uriReleases} target="_blank">download</Link>
-              <span> and install the {updateInfo.version} version.</span>
+              <span>For more information see </span>
+              <Link variant="underline" href={uriReleases} target="_blank">release page</Link>
+              .
             </Text>
+            <Flex justify="right" mt={4}>
+              <Text text-align="right">
+                <Button onClick={onUpdate} size="xs" colorPalette="teal">
+                  Update
+                </Button>
+              </Text>
+            </Flex>
           </PopoverBody>
         </PopoverContent>
       </PopoverRoot>
@@ -116,10 +127,8 @@ export default function NavbarUpdateAvailable() {
             <DialogActionTrigger asChild>
               <Button variant="outline">Close</Button>
             </DialogActionTrigger>
-            <Button asChild>
-              <a href={uriReleases} target="_blank">
-                Download
-              </a>
+            <Button onClick={onUpdate}>
+              Update
             </Button>
           </DialogFooter>
           <DialogCloseTrigger />
