@@ -31,6 +31,12 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file'
 
         if (conf.isFileTransportEnabled) {
           transports.push(new WinstonDailyRotateFile({
+            format: winston.format.combine(
+              winston.format.timestamp({
+                format: 'YYYY-MM-DD HH:mm:ss',
+              }),
+              winston.format.json(),
+            ),
             level: 'info',
             auditFile: join(conf.directory, 'audit.json'),
             filename: '%DATE%.log',
