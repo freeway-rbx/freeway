@@ -48,14 +48,12 @@ export class Piece {
   }
 
   toJSON() {
-    const {isDirty, ...object} = this
-    return object
-  }
+    const {
+      isDirty, // exclude isDirty
+      ...object
+    } = this
 
-  static fromObject(obj: NewPieceDto) {
-    const piece = new Piece()
-    Object.assign(piece, obj)
-    return piece
+    return object
   }
 }
 

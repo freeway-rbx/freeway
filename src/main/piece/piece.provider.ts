@@ -6,7 +6,7 @@ import {getHash, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import fse from 'fs-extra'
-import {Piece} from './piece'
+import {NewPieceDto, Piece} from './piece'
 
 type PieceCriteria = any // PieceFieldCriteria | ((piece: Piece) => boolean)
 
@@ -56,7 +56,7 @@ export class PieceProvider {
 
     if (Array.isArray(data)) {
       for (const x of data) {
-        this.data.push(Piece.fromObject(x))
+        this.data.push(this.createFromObject(x))
       }
     }
     else {
@@ -91,13 +91,19 @@ export class PieceProvider {
     piece.deletedAt = now()
   }
 
+  createFromObject(obj: NewPieceDto) {
+    const piece = new Piece()
+    Object.assign(piece, obj)
+    return piece
+  }
+
   async create(dir: string, name: string, role = PieceRoleEnum.asset) {
     const id = this._generateUniqId()
     const hash = null
     const type = this.getTypeByName(name)
     const isDirty = false
 
-    const newPiece = Piece.fromObject({
+    const newPiece = this.createFromObject({
       id,
       dir,
       name,
@@ -125,7 +131,7 @@ export class PieceProvider {
 
     const hash = await getHash(placeholderFile)
 
-    const piece = Piece.fromObject({
+    const piece = this.createFromObject({
       id,
       dir,
       name: uniqName,
@@ -155,7 +161,7 @@ export class PieceProvider {
     const type = this.getTypeByName(name)
     const isDirty = false
 
-    const piece = Piece.fromObject({
+    const piece = this.createFromObject({
       id,
       dir,
       name,
@@ -235,7 +241,8 @@ export class PieceProvider {
     }
     catch (err: any) {
       if (err.code === 'ENOENT') {
-        // no such file, it is ok in this case
+        // No such file,
+        // It is ok in this case
       }
       else {
         this.logger.error(`Unable to unlink piece file: ${piece.fullPath}`, err)
