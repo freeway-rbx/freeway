@@ -7,7 +7,7 @@ const electron = {
   beep: (): void => ipcRenderer.send('app:beep'),
   appUpdate: (): void => ipcRenderer.send('app:update'),
 
-  reveal: (path: string = ''): void => ipcRenderer.send('reveal', path),
+  reveal: (path: string = '', isOpen = false): void => ipcRenderer.send('reveal', path, isOpen),
 
   login: (): void => ipcRenderer.send('auth:login'),
   logout: (): void => ipcRenderer.send('auth:logout'),

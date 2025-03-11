@@ -1,5 +1,5 @@
 import {toaster} from '@/components/ui/toaster'
-import StatusData from '@/pages/Status/StatusData'
+import StatusInfo from '@/pages/Status/StatusInfo'
 
 import {Box, Button, Flex, Heading, Stack} from '@chakra-ui/react'
 import {useState} from 'react'
@@ -32,7 +32,7 @@ function Status() {
   return (
     <Box p={4}>
       <Heading size="2xl" mb={4}>Status</Heading>
-      <StatusData></StatusData>
+      <StatusInfo></StatusInfo>
       <Flex gap={2}>
         <Stack>
           <Button
