@@ -5,6 +5,8 @@ import {ConfigService} from '@nestjs/config'
 import {Payload} from '@nestjs/microservices'
 import {shell} from 'electron'
 
+type RevealPayload = [string, boolean] | string
+
 @Controller()
 export class AppController {
   constructor(
@@ -30,13 +32,26 @@ export class AppController {
   }
 
   @IpcOn('reveal')
-  public async reveal(@Payload() path: string = ''): Promise<void> {
-    if (path) {
-      shell.showItemInFolder(path)
+  public async reveal(@Payload() payload: RevealPayload): Promise<void> {
+    let path: string
+    let isOpen: boolean
+
+    if (Array.isArray(payload)) {
+      [path, isOpen] = payload
     }
     else {
-      const path = this.config.get<ConfigurationPiece>('piece').watchDirectory
+      [path, isOpen] = [payload, false]
+    }
+
+    if (!path) {
+      path = this.config.get<ConfigurationPiece>('piece').watchDirectory
+    }
+
+    if (isOpen) {
       await shell.openPath(path)
+    }
+    else {
+      shell.showItemInFolder(path)
     }
   }
 
