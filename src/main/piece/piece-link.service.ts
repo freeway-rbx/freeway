@@ -1,9 +1,8 @@
 import {join, parse} from 'node:path'
 import {platform} from '@electron-toolkit/utils'
 import {PieceEventEnum} from '@main/piece/enum'
-
 import {PieceProvider} from '@main/piece/piece.provider'
-import {STUDIO_LINKS_DIR} from '@main/utils'
+import {now, STUDIO_LINKS_DIR} from '@main/utils'
 import {Injectable} from '@nestjs/common'
 import {OnEvent} from '@nestjs/event-emitter'
 import fse from 'fs-extra'
@@ -32,9 +31,10 @@ export class PieceLinkService {
     else {
       await fse.ensureSymlink(fullPath, dest)
     }
+    piece.linkedAt = now()
   }
 
-  async removeLinks(piece: Piece) {
+  async removeLink(piece: Piece) {
     const dest = this.getLinkPath(piece)
     await fse.remove(dest)
   }

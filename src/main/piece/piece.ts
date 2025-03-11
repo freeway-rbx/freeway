@@ -36,6 +36,7 @@ export class Piece {
   public updatedAt: number = null
   public deletedAt: number = null
   public uploadedAt: number = null
+  public linkedAt: number = null
   public isDirty: boolean = true
   public get fullPath() {
     return `${this.dir}/${this.name}`
