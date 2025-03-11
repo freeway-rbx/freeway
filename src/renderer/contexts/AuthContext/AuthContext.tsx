@@ -1,3 +1,4 @@
+import {GetApiTestDto} from '@/api'
 // import { AxiosError } from 'axios'
 import {createContext} from 'react'
 
@@ -13,6 +14,7 @@ export interface User {
 }
 
 export interface AuthContextData {
+  testData: GetApiTestDto
   user?: User
   isAuthenticated: boolean
   loadingUserData: boolean

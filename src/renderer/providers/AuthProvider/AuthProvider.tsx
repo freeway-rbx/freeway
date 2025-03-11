@@ -1,6 +1,9 @@
+import {EmptyState} from '@/components/ui/empty-state'
+import {Box} from '@chakra-ui/react'
+import {getApiTest, GetApiTestDto} from '@render/api'
 import {AuthContext, User} from '@render/contexts'
 import {paths} from '@render/router'
-import {ReactNode, useState} from 'react'
+import {ReactNode, useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {useNavigate} from 'react-router-dom'
 // import { api, setAuthorizationHeader } from '@render/services'
@@ -35,6 +38,28 @@ function AuthProvider(props: Props) {
     navigate(paths.LOGIN_PATH)
     window.electron.logout()
   }
+
+  const [testData, setTestData] = useState<GetApiTestDto>()
+  const [testAttempt, setTestAttempt] = useState<number>(1)
+
+  async function fetchTestData() {
+    let data: GetApiTestDto | null = null
+    do {
+      try {
+        data = await getApiTest()
+        setTestData(data)
+      }
+      catch (err: any) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        setTestAttempt(testAttempt + 1)
+        console.error(err)
+      }
+    } while (!data)
+  }
+
+  useEffect(() => {
+    fetchTestData()
+  }, [])
 
   /*
   useEffect(() => {
@@ -93,12 +118,23 @@ function AuthProvider(props: Props) {
   //   getUserData()
   // }, [])
 
+  if (!testData) {
+    return (
+      <>
+        <EmptyState title="Loading..." mt="12">
+          {testAttempt > 2 && <Box>Attempt {testAttempt}</Box>}
+        </EmptyState>
+      </>
+    )
+  }
+
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
         user,
         loadingUserData,
+        testData,
         signIn,
         signOut,
       }}

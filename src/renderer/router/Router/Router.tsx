@@ -36,7 +36,6 @@ function Router() {
             <NavBar />
           )}
         />
-
       </Routes>
 
       <Routes>
