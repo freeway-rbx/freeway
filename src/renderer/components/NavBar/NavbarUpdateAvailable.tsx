@@ -24,6 +24,8 @@ import {Box, Button, Flex, Heading, Link, Show, Stack, Text} from '@chakra-ui/re
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 
+let isDialogWasOpened = false
+
 export default function NavbarUpdateAvailable() {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [isUpdateAvailable, setIsUpdateAvailable] = useState<boolean>(false)
@@ -55,13 +57,17 @@ export default function NavbarUpdateAvailable() {
   }, [])
 
   useEffect(() => {
+    if (isDialogWasOpened) {
+      return // stop annoying
+    }
+
     setDialogOpen(true)
-    console.log('setDialogOpen(true)')
+
+    isDialogWasOpened = true
   }, [updateInfo])
 
-  const onOpenChange = (e) => {
+  const onDialogOpenChange = (e) => {
     setDialogOpen(e.open)
-    console.log(e.open)
   }
 
   const onUpdate = (_ev) => {
@@ -107,7 +113,7 @@ export default function NavbarUpdateAvailable() {
         </PopoverContent>
       </PopoverRoot>
 
-      <DialogRoot open={dialogOpen} onOpenChange={onOpenChange} placement="center" scrollBehavior="inside">
+      <DialogRoot open={dialogOpen} onOpenChange={onDialogOpenChange} placement="center" scrollBehavior="inside">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update available</DialogTitle>
