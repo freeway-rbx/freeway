@@ -19,7 +19,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {Button, Flex, Link, Text} from '@chakra-ui/react'
+import {Box, Button, Flex, Heading, Link, Show, Stack, Text} from '@chakra-ui/react'
 
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
@@ -93,7 +93,7 @@ export default function NavbarUpdateAvailable() {
               <span> is available.</span>
               <br />
               <span>For more information see </span>
-              <Link variant="underline" href={uriReleases} target="_blank">release page</Link>
+              <Link variant="underline" href={uriRelease} target="_blank">release page</Link>
               .
             </Text>
             <Flex justify="right" mt={4}>
@@ -107,21 +107,27 @@ export default function NavbarUpdateAvailable() {
         </PopoverContent>
       </PopoverRoot>
 
-      <DialogRoot open={dialogOpen} onOpenChange={onOpenChange} placement="center">
+      <DialogRoot open={dialogOpen} onOpenChange={onOpenChange} placement="center" scrollBehavior="inside">
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update available</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <p>
-              <span>A new </span>
-              <Link variant="underline" href={uriRelease} target="_blank">version {updateInfo.version}</Link>
-              <span> is available.</span>
-              <br />
-              <span>Please </span>
-              <Link variant="underline" href={uriReleases} target="_blank">download</Link>
-              <span> and install the {updateInfo.version} version.</span>
-            </p>
+            <Stack gap="4">
+              <Box>
+                <span>A new </span>
+                <Link variant="underline" href={uriRelease} target="_blank">version {updateInfo.version}</Link>
+                <span> is available.</span>
+                <br />
+                <span>Please update Freeway application.</span>
+              </Box>
+              <Show when={updateInfo.releaseNotes}>
+                <Box>
+                  <Heading size="sm">What's new:</Heading>
+                  <Box dangerouslySetInnerHTML={{__html: updateInfo.releaseNotes}}></Box>
+                </Box>
+              </Show>
+            </Stack>
           </DialogBody>
           <DialogFooter>
             <DialogActionTrigger asChild>
