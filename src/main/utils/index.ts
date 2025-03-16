@@ -8,6 +8,9 @@ import {studioContentPath, studioPluginsPath} from '@roblox-integrations/roblox-
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
+import { Document, NodeIO } from '@gltf-transform/core';
+import { vec3, mat4 } from 'gl-matrix';
+
 
 export async function getHash(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -78,10 +81,7 @@ export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024):
   }
 }
 
-export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File> {
-  if (!filePath.toLocaleLowerCase().endsWith('obj'))
-    return null
-
+async function parseOBJFile(filePath: string): Promise<RbxMesh> {
   const fileContent = await fs.readFile(filePath, 'utf-8')
   const objFile = new OBJFile(fileContent)
   const obj = objFile.parse()
@@ -91,7 +91,6 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
   const uv = []
   const vn = []
   const faces = []
-
   mesh.vertices.forEach((vert: any) => {
     v.push([vert.x, vert.y, vert.z])
   })
@@ -120,10 +119,86 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
     vn,
     faces,
   }
+  return result
+}
 
+
+async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
+  const io = new NodeIO();
+  const document = io.readBinary(filePath);
+  const root = document.getRoot();
+  const scene = root.listScenes()[0];
+
+  const result = [];
+
+  scene.traverse((node) => {
+    if (node.isMesh()) {
+      const mesh = node.getMesh();
+      const transform = node.getWorldMatrix();
+      const vertices = [];
+      const faces = [];
+      const normals = [];
+
+      mesh.listPrimitives().forEach((primitive) => {
+        const positionAccessor = primitive.getAttribute('POSITION');
+        const normalAccessor = primitive.getAttribute('NORMAL');
+        const indicesAccessor = primitive.getIndices();
+
+        if (positionAccessor) {
+          for (let i = 0; i < positionAccessor.getCount(); i++) {
+            const vertex = vec3.create();
+            positionAccessor.getElement(i, vertex);
+            vec3.transformMat4(vertex, vertex, transform);
+            vertices.push(Array.from(vertex));
+          }
+        }
+
+        if (normalAccessor) {
+          for (let i = 0; i < normalAccessor.getCount(); i++) {
+            const normal = vec3.create();
+            normalAccessor.getElement(i, normal);
+            vec3.transformMat4(normal, normal, transform);
+            normals.push(Array.from(normal));
+          }
+        }
+
+        if (indicesAccessor) {
+          for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
+            faces.push([
+              indicesAccessor.getScalar(i),
+              indicesAccessor.getScalar(i + 1),
+              indicesAccessor.getScalar(i + 2),
+            ]);
+          }
+        }
+      });
+
+      result.push({
+        name: node.getName(),
+        transform: Array.from(transform),
+        vertices,
+        faces,
+        normals,
+      });
+    }
+  });
+
+  return null;
+}
+
+export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File> {
+  let result
+  if (filePath.toLocaleLowerCase().endsWith('obj')) {
+    result = await parseOBJFile(filePath)
+  }
+  else if (filePath.toLocaleLowerCase().endsWith( 'glb')) 
+    result = await parseGLTFFile(filePath)   
+  else 
+    return null
   result = translateVertices(result)
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
+
 }
 
 function calcBoundingBox(mesh: RbxMesh): number[][] {
@@ -149,6 +224,7 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
 
 function translateVertices(mesh: RbxMesh): RbxMesh {
   // bounding box
+  console.log(JSON.stringify(mesh))
   if (mesh.v.length === 0)
     return mesh
   const box = calcBoundingBox(mesh)

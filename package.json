@@ -1,6 +1,6 @@
 {
   "name": "freeway",
-  "version": "0.1.2",
+  "version": "0.0.5",
   "author": {
     "name": "Evgeny Sinitsyn",
     "email": "cuhuak@gmail.com"
@@ -81,7 +81,11 @@
     "rxjs": "^7.8.1",
     "tempy": "^3.1.0",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0", 
+    "@gltf-transform/core": "^4.1.2",
+    "@gltf-transform/extensions": "^4.1.2",
+    "@gltf-transform/functions": "^4.1.2",
+    "gl-matrix": "^3.4.3"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",
