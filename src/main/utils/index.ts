@@ -4,13 +4,12 @@ import fs from 'node:fs/promises'
 import {join, normalize} from 'node:path'
 import process from 'node:process'
 import {is} from '@electron-toolkit/utils'
+import GLTF from '@gltf-transform/core'
 import {studioContentPath, studioPluginsPath} from '@roblox-integrations/roblox-install'
+import {vec3} from 'gl-matrix'
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
-import { Document, NodeIO } from '@gltf-transform/core';
-import { vec3, mat4 } from 'gl-matrix';
-
 
 export async function getHash(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -112,64 +111,62 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
     faces.push({material: '', group: '', smoothingGroup: face.smoothingGroup, v: verts})
   })
 
-  let result: RbxMesh = {
+  return {
     name: mesh.name,
     v,
     uv,
     vn,
     faces,
   }
-  return result
 }
 
-
 async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
-  const io = new NodeIO();
-  const document = await io.read(filePath);
-  const root = document.getRoot();
-  const scene = root.listScenes()[0];
+  const io = new GLTF.NodeIO()
+  const document = await io.read(filePath)
+  const root = document.getRoot()
+  const scene = root.listScenes()[0]
 
-  const result = [];
+  const result = []
 
-  scene.traverse((node) => {
+  scene.traverse((node: GLTF.Node) => {
     if (node.getMesh() != null) {
-      const mesh = node.getMesh();
-      const transform = node.getWorldMatrix();
-      const vertices = [];
-      const faces = [];
-      const normals = [];
-      const uvs = [];
-      const faceUVs = [];
+      const mesh = node.getMesh()
+      const transform = node.getWorldMatrix()
+      const vertices = []
+      const faces = []
+      const normals = []
+      const uvs = []
+      const faceUVs = []
 
       mesh.listPrimitives().forEach((primitive) => {
-        const positionAccessor = primitive.getAttribute('POSITION');
-        const normalAccessor = primitive.getAttribute('NORMAL');
-        const indicesAccessor = primitive.getIndices();
-        const uvAccessor = primitive.getAttribute('TEXCOORD_0');
+        const positionAccessor = primitive.getAttribute('POSITION')
+        const normalAccessor = primitive.getAttribute('NORMAL')
+        const indicesAccessor = primitive.getIndices()
+        const uvAccessor = primitive.getAttribute('TEXCOORD_0')
 
         if (positionAccessor) {
           for (let i = 0; i < positionAccessor.getCount(); i++) {
-            const vertex = vec3.create();
-            positionAccessor.getElement(i, vertex);
-            vec3.transformMat4(vertex, vertex, transform);
-            vertices.push(Array.from(vertex));
+            const vertex = vec3.create()
+            positionAccessor.getElement(i, vertex as Array<number>)
+            vec3.transformMat4(vertex, vertex, transform)
+            vertices.push(Array.from(vertex))
           }
         }
 
         if (normalAccessor) {
           for (let i = 0; i < normalAccessor.getCount(); i++) {
-            const normal = vec3.create();
-            normalAccessor.getElement(i, normal);
-            vec3.transformMat4(normal, normal, transform);
-            normals.push(Array.from(normal));
+            const normal = vec3.create()
+            normalAccessor.getElement(i, normal as Array<number>)
+            vec3.transformMat4(normal, normal, transform)
+            normals.push(Array.from(normal))
           }
         }
 
         if (uvAccessor) {
           for (let i = 0; i < uvAccessor.getCount(); i++) {
-            const uv = vec3.create();
-            uvAccessor.getElement(i, uv);
-            uvs.push([uv[0], uv[1]]);
+            const uv = vec3.create()
+            uvAccessor.getElement(i, uv as Array<number>)
+            uvs.push([uv[0], uv[1]])
           }
         }
 
@@ -179,19 +176,19 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
               indicesAccessor.getScalar(i) + 1,
               indicesAccessor.getScalar(i + 1) + 1,
               indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
-            ];
-            faces.push(face);
+            ]
+            faces.push(face)
 
             if (uvAccessor) {
               faceUVs.push([
                 uvs[face[0] - 1],
                 uvs[face[1] - 1],
                 uvs[face[2] - 1],
-              ]);
+              ])
             }
           }
         }
-      });
+      })
       const gltfMesh = {
         name: node.getName(),
         transform: Array.from(transform),
@@ -201,41 +198,42 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
         normals,
       }
 
-      result.push(gltfMesh);
+      result.push(gltfMesh)
     }
-  });
-  let transformedFaces = []
-  result[0].faces.forEach(face => {
-    transformedFaces.push({v: [
-      [face[0] , face[0], face[0]],
-      [face[1] , face[1], face[1]],
-      [face[2] , face[2], face[2]]
-    ]})
-  });
+  })
 
-  let res: RbxMesh = {
+  const transformedFaces = []
+  result[0].faces.forEach((face: Array<number>) => {
+    transformedFaces.push({v: [
+      [face[0], face[0], face[0]],
+      [face[1], face[1], face[1]],
+      [face[2], face[2], face[2]],
+    ]})
+  })
+
+  return {
     name: result[0].name,
     v: result[0].vertices,
-    uv: result[0].uvs, 
-    vn : result[0].normals,
+    uv: result[0].uvs,
+    vn: result[0].normals,
     faces: transformedFaces,
   }
-  return res
 }
 
 export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File> {
-  let result
+  let result: any
   if (filePath.toLocaleLowerCase().endsWith('obj')) {
     result = await parseOBJFile(filePath)
   }
-  else if (filePath.toLocaleLowerCase().endsWith( 'glb')) 
-    result = await parseGLTFFile(filePath)   
-  else 
+  else if (filePath.toLocaleLowerCase().endsWith('glb')) {
+    result = await parseGLTFFile(filePath)
+  }
+  else {
     return null
+  }
   result = translateVertices(result)
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
-
 }
 
 function calcBoundingBox(mesh: RbxMesh): number[][] {
