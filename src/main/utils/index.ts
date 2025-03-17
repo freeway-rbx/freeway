@@ -125,20 +125,19 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
 
 async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
   const io = new NodeIO();
-  const document = io.readBinary(filePath);
+  const document = await io.read(filePath);
   const root = document.getRoot();
   const scene = root.listScenes()[0];
 
   const result = [];
 
   scene.traverse((node) => {
-    if (node.isMesh()) {
+    if (node.getMesh() != null) {
       const mesh = node.getMesh();
       const transform = node.getWorldMatrix();
       const vertices = [];
       const faces = [];
       const normals = [];
-
       mesh.listPrimitives().forEach((primitive) => {
         const positionAccessor = primitive.getAttribute('POSITION');
         const normalAccessor = primitive.getAttribute('NORMAL');
@@ -182,8 +181,24 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
       });
     }
   });
-
-  return null;
+  let transformedFaces = []
+  result[0].faces.forEach(face => {
+    // TODO MI 1, 1 are placeholders for UVs and Normal ids
+    transformedFaces.push({v: [
+      [face[0] , 1, 1],
+      [face[1] , 1, 1],
+      [face[2] , 1, 1]
+    ]})
+  });
+  let res: RbxMesh = {
+    name: result[0].name,
+    v: result[0].vertices,
+    uv: [ [1, 1]], // TODO MI This is a placeholder for UVs
+    vn : result[0].normals,
+    faces: transformedFaces,
+  }
+  console.log(JSON.stringify(res))
+  return res
 }
 
 export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File> {

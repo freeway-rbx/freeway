@@ -6,4 +6,5 @@ export const PieceExtTypeMap: Map<string, PieceTypeEnum> = new Map ([
   ['.jpeg', PieceTypeEnum.image],
   ['.gif', PieceTypeEnum.image],
   ['.obj', PieceTypeEnum.mesh],
+  ['.glb', PieceTypeEnum.mesh],
 ])
