@@ -138,10 +138,15 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
       const vertices = [];
       const faces = [];
       const normals = [];
+      const uvs = [];
+      const faceUVs = [];
+
+
       mesh.listPrimitives().forEach((primitive) => {
         const positionAccessor = primitive.getAttribute('POSITION');
         const normalAccessor = primitive.getAttribute('NORMAL');
         const indicesAccessor = primitive.getIndices();
+        const uvAccessor = primitive.getAttribute('TEXCOORD_0');
 
         if (positionAccessor) {
           for (let i = 0; i < positionAccessor.getCount(); i++) {
@@ -161,43 +166,61 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
           }
         }
 
+        if (uvAccessor) {
+          for (let i = 0; i < uvAccessor.getCount(); i++) {
+            const uv = vec3.create();
+            uvAccessor.getElement(i, uv);
+            uvs.push([uv[0], uv[1]]);
+          }
+        }
+
         if (indicesAccessor) {
           for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
-            faces.push([
-              indicesAccessor.getScalar(i),
-              indicesAccessor.getScalar(i + 1),
-              indicesAccessor.getScalar(i + 2),
-            ]);
+            const face = [
+              indicesAccessor.getScalar(i) + 1,
+              indicesAccessor.getScalar(i + 1) + 1,
+              indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
+            ];
+            faces.push(face);
+
+            if (uvAccessor) {
+              faceUVs.push([
+                uvs[face[0] - 1],
+                uvs[face[1] - 1],
+                uvs[face[2] - 1],
+              ]);
+            }
           }
         }
       });
-
-      result.push({
+      const gltfMesh = {
         name: node.getName(),
         transform: Array.from(transform),
         vertices,
         faces,
+        uvs,
         normals,
-      });
+      }
+
+      result.push(gltfMesh);
     }
   });
   let transformedFaces = []
   result[0].faces.forEach(face => {
-    // TODO MI 1, 1 are placeholders for UVs and Normal ids
     transformedFaces.push({v: [
-      [face[0] , 1, 1],
-      [face[1] , 1, 1],
-      [face[2] , 1, 1]
+      [face[0] , face[0], face[0]],
+      [face[1] , face[1], face[1]],
+      [face[2] , face[2], face[2]]
     ]})
   });
+
   let res: RbxMesh = {
     name: result[0].name,
     v: result[0].vertices,
-    uv: [ [1, 1]], // TODO MI This is a placeholder for UVs
+    uv: result[0].uvs, 
     vn : result[0].normals,
     faces: transformedFaces,
   }
-  console.log(JSON.stringify(res))
   return res
 }
 
