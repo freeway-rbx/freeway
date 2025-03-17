@@ -261,7 +261,6 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
 
 function translateVertices(mesh: RbxMesh): RbxMesh {
   // bounding box
-  console.log(JSON.stringify(mesh))
   if (mesh.v.length === 0)
     return mesh
   const box = calcBoundingBox(mesh)
