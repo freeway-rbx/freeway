@@ -12,7 +12,6 @@ import {LogModule} from './log/log.module'
 import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
-import {TestModule} from './test/test.module'
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import {TestModule} from './test/test.module'
     LogModule,
     ScheduleModule.forRoot(),
     AuthModule,
-    TestModule,
     RobloxApiModule,
     PieceModule,
     PluginModule,
