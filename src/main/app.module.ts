@@ -12,6 +12,7 @@ import {LogModule} from './log/log.module'
 import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
+import { FoobarModule } from './foobar/foobar.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import {RobloxApiModule} from './roblox-api/roblox-api.module'
     RobloxApiModule,
     PieceModule,
     PluginModule,
+    FoobarModule,
   ],
   controllers: [AppController],
   providers: [AppService],

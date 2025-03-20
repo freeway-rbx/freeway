@@ -1,6 +1,6 @@
 import {NavBar} from '@render/components'
 import {useRoutePaths} from '@render/hooks'
-import {Login, Pieces, Register, Status, Users} from '@render/pages'
+import {Foobar, Login, Pieces, Register, Status, Users} from '@render/pages'
 import {Route, Routes} from 'react-router-dom'
 import {PrivateRoute} from '../PrivateRoute'
 import {PublicRoute} from '../PublicRoute'
@@ -24,6 +24,14 @@ function Router() {
             <NavBar />
           )}
         />
+
+        <Route
+          path="/foobar"
+          element={(
+            <NavBar></NavBar>
+          )}
+        />
+
         <Route
           path={STATUS_PATH}
           element={(
@@ -43,6 +51,13 @@ function Router() {
           path={ROOT_PATH}
           element={(
             <Pieces />
+          )}
+        />
+
+        <Route
+          path="/foobar"
+          element={(
+            <Foobar></Foobar>
           )}
         />
 

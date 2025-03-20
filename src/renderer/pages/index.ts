@@ -1,3 +1,4 @@
+export * from './Foobar'
 export * from './Home'
 export * from './Login'
 export * from './Pieces'

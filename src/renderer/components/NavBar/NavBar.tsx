@@ -46,6 +46,7 @@ export default function NavBar() {
           </Box>
           <HStack as="nav" gap={4} display={{base: 'none', md: 'flex'}}>
             <NavBarLink href={ROOT_PATH}>Pieces</NavBarLink>
+            <NavBarLink href="/Foobar">Foobar</NavBarLink>
             {isDev && (<NavBarLink href={STATUS_PATH}>Status</NavBarLink>)}
           </HStack>
         </HStack>
@@ -83,6 +84,7 @@ export default function NavBar() {
               <Box pb={4} display={{md: 'none'}}>
                 <Stack as="nav" gap={2}>
                   <NavBarLink href={ROOT_PATH}>Pieces</NavBarLink>
+                  <NavBarLink href="/Foobar">Foobar</NavBarLink>
                   <NavBarLink href={STATUS_PATH}>Status</NavBarLink>
                 </Stack>
               </Box>
