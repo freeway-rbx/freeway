@@ -142,56 +142,60 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
       const faceUVs = [];
 
       mesh.listPrimitives().forEach((primitive) => {
-        const positionAccessor = primitive.getAttribute('POSITION');
-        const normalAccessor = primitive.getAttribute('NORMAL');
-        const indicesAccessor = primitive.getIndices();
-        const uvAccessor = primitive.getAttribute('TEXCOORD_0');
+        const positionAccessor = primitive.getAttribute('POSITION')
+        const normalAccessor = primitive.getAttribute('NORMAL')
+        const indicesAccessor = primitive.getIndices()
+        const uvAccessor = primitive.getAttribute('TEXCOORD_0')
+
+        const positionOffset = vertices.length
+        const normalOffset = normals.length
+        const uvOffset = uvs.length
 
         if (positionAccessor) {
           for (let i = 0; i < positionAccessor.getCount(); i++) {
-            const vertex = vec3.create();
-            positionAccessor.getElement(i, vertex);
-            vec3.transformMat4(vertex, vertex, transform);
-            vertices.push(Array.from(vertex));
+            const vertex = vec3.create()
+            positionAccessor.getElement(i, vertex as Array<number>)
+            vec3.transformMat4(vertex, vertex, transform)
+            vertices.push(Array.from(vertex))
           }
         }
 
         if (normalAccessor) {
           for (let i = 0; i < normalAccessor.getCount(); i++) {
-            const normal = vec3.create();
-            normalAccessor.getElement(i, normal);
-            vec3.transformMat4(normal, normal, transform);
-            normals.push(Array.from(normal));
+            const normal = vec3.create()
+            normalAccessor.getElement(i, normal as Array<number>)
+            vec3.transformMat4(normal, normal, transform)
+            normals.push(Array.from(normal))
           }
         }
 
         if (uvAccessor) {
           for (let i = 0; i < uvAccessor.getCount(); i++) {
-            const uv = vec3.create();
-            uvAccessor.getElement(i, uv);
-            uvs.push([uv[0], uv[1]]);
+            const uv = vec3.create()
+            uvAccessor.getElement(i, uv as Array<number>)
+            uvs.push([uv[0], uv[1]])
           }
         }
 
         if (indicesAccessor) {
           for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
             const face = [
-              indicesAccessor.getScalar(i) + 1,
-              indicesAccessor.getScalar(i + 1) + 1,
-              indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
-            ];
-            faces.push(face);
+              positionOffset + indicesAccessor.getScalar(i) + 1,
+              normalOffset + indicesAccessor.getScalar(i + 1) + 1,
+              uvOffset + indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
+            ]
+            faces.push(face)
 
             if (uvAccessor) {
               faceUVs.push([
                 uvs[face[0] - 1],
                 uvs[face[1] - 1],
                 uvs[face[2] - 1],
-              ]);
+              ])
             }
           }
         }
-      });
+      })
       const gltfMesh = {
         name: node.getName(),
         transform: Array.from(transform),
