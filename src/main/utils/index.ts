@@ -144,6 +144,10 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
         const indicesAccessor = primitive.getIndices()
         const uvAccessor = primitive.getAttribute('TEXCOORD_0')
 
+        const positionOffset = vertices.length
+        const normalOffset = normals.length
+        const uvOffset = uvs.length
+
         if (positionAccessor) {
           for (let i = 0; i < positionAccessor.getCount(); i++) {
             const vertex = vec3.create()
@@ -173,9 +177,9 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
         if (indicesAccessor) {
           for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
             const face = [
-              indicesAccessor.getScalar(i) + 1,
-              indicesAccessor.getScalar(i + 1) + 1,
-              indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
+              positionOffset + indicesAccessor.getScalar(i) + 1,
+              normalOffset + indicesAccessor.getScalar(i + 1) + 1,
+              uvOffset + indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
             ]
             faces.push(face)
 
