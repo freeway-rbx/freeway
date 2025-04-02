@@ -1,5 +1,8 @@
 # Freeway -- 100x faster asset iteration on Roblox
 
+Please visit [https://freeway-rbx.app](https://freeway-rbx.app) for how-tos and product details. 
+
+
 ### Installation 
 
 
@@ -10,7 +13,7 @@
 
 
 ### Note on meshes support
-Freeway only understands single-mesh OBJ files(for now). If your OBJ contains more than one mesh, Freeway will pick the first one. It also can't decimate meshes(yet!), so please make sure your mesh fits the Roblox verts count limit.  
+Freeway only understands single-mesh GLB and OBJ files(for now). If your GLB or OBJ contains more than one mesh, Freeway will pick the first one. It also can't decimate meshes(yet!), so please make sure your mesh fits the Roblox verts count limit.  
 
 
 
