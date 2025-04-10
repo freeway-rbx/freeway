@@ -1,9 +1,7 @@
 import {join, parse} from 'node:path'
 import process from 'node:process'
 import {ConfigurationPiece} from '@main/_config/configuration'
-import {ElectronService} from '@main/electron/electron.service'
 import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
-import {now} from '@main/utils'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
@@ -12,6 +10,7 @@ import {
   getRbxFileBase64,
   getRbxImageBitmapBase64,
   getRbxMeshBase64,
+  now,
   RbxBase64File,
   RbxBase64Image,
   writeRbxFile,
@@ -19,8 +18,7 @@ import {
 } from '@main/utils'
 import {Injectable, Logger, NotFoundException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {EventEmitter2, OnEvent} from '@nestjs/event-emitter'
-import {Interval} from '@nestjs/schedule'
+import {EventEmitter2} from '@nestjs/event-emitter'
 import {app} from 'electron'
 import fse from 'fs-extra'
 import {temporaryFile} from 'tempy'
@@ -35,7 +33,6 @@ export class PieceService {
     private readonly provider: PieceProvider,
     private readonly eventEmitter: EventEmitter2,
     private readonly config: ConfigService,
-    private readonly electron: ElectronService,
   ) {
     this.options = this.config.get<ConfigurationPiece>('piece')
   }
@@ -190,73 +187,8 @@ export class PieceService {
     return getMime(piece.fullPath)
   }
 
-  _sendIpcMessageEvent(name: string, data: any) {
-    const win = this.electron.getMainWindow()
-    if (win) {
-      win.webContents.send('ipc-message', {name, data})
-    }
-  }
-
-  async prunePieces() {
-    const deletedPieces = this.provider.findMany({deletedAt$gte: Date.now() - this.options.deletedTimeout / 1000})
-    deletedPieces.forEach((piece: Piece) => {
-      this.provider.hardDelete(piece)
-    })
-
-    const dirtyPieces = this.provider.findMany({isDirty: true, deletedAt: null})
-    dirtyPieces.forEach((piece: Piece) => {
-      this.provider.delete(piece)
-    })
-
-    const count = deletedPieces.length + dirtyPieces.length
-    if (count) {
-      this.logger.log(`Pruned pieces ${count} (deleted ${deletedPieces.length}, dirty: ${dirtyPieces.length})`)
-      await this.provider.save()
-    }
-    else {
-      // this.logger.debug(`No pieces to prune`)
-    }
-
-    return deletedPieces.length + dirtyPieces.length
-  }
-
-  @Interval(60_000) // every 60 seconds
-  async handleIntervalPrunePieces() {
-    await this.prunePieces()
-  }
-
-  @OnEvent(PieceEventEnum.watcherReady)
-  async handlePieceWatcherReady() {
-    await this.prunePieces()
-  }
-
-  @OnEvent(PieceEventEnum.initiated)
-  async handlePieceInitiated(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.initiated, piece)
-  }
-
-  @OnEvent(PieceEventEnum.created)
-  async handlePieceCreated(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.created, piece)
-  }
-
-  @OnEvent(PieceEventEnum.updated)
-  async handlePieceUpdated(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.updated, piece)
-  }
-
-  @OnEvent(PieceEventEnum.changed)
-  async handlePieceChanged(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.changed, piece)
-  }
-
-  @OnEvent(PieceEventEnum.uploaded)
-  async handlePieceUploaded(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.uploaded, piece)
-  }
-
-  @OnEvent(PieceEventEnum.deleted)
-  async handlePieceDeleted(piece: Piece) {
-    this._sendIpcMessageEvent(PieceEventEnum.deleted, piece)
+  getPieceMetadata(piece: Piece) {
+    // TODO
+    return piece
   }
 }

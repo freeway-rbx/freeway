@@ -62,6 +62,12 @@ export class PieceController {
     return this.pieceService.getRaw(id)
   }
 
+  @Get('/:id/metadata')
+  async getMetadata(@Param('id') id: string) {
+    const piece = this.pieceService.getPieceById(id)
+    return this.pieceService.getPieceMetadata(piece)
+  }
+
   @Get('/:id/preview')
   async getPreview(@Param('id') id: string): Promise<StreamableFile> {
     const piece = this.pieceService.getPieceById(id)
