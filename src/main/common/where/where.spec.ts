@@ -72,14 +72,14 @@ describe('filter numbers', () => {
 
 describe('filter objects', () => {
   const array = [
-    {a: 1, b: 'aaa'},
-    {a: 2, b: 'bbb42'},
-    {a: 3, b: 'ccc'},
-    {a: 4, b: 'ddd42'},
-    {a: 5, b: 'aaa22'},
-    {a: 6, b: 'aaa00'},
-    {a: 7, b: 'bbb42'},
-    {a: 8, b: '42'},
+    {a: 1, b: 'aaaaaa'},
+    {a: 2, b: 'bbbb42'},
+    {a: 3, b: 'cccccc'},
+    {a: 4, b: 'dddd42'},
+    {a: 5, b: 'aaaa22'},
+    {a: 6, b: 'aaaa00'},
+    {a: 7, b: 'bbbb42'},
+    {a: 8, b: '424242'},
   ]
 
   it('no element filtered out', async () => {

@@ -116,30 +116,30 @@ const EXPR_MAP = {
 
 export interface ParsedCriteria {
   expr: (a: any, b: any) => boolean
-  key: string
+  name: string
   value: any
 }
 
 export function parse(criteria: object): ParsedCriteria[] {
   const result: ParsedCriteria[] = []
   for (const criteriaKey in criteria) {
-    const [key, fn] = criteriaKey.split('$', 2)
-    if (fn) {
-      if (fn in EXPR_MAP) {
+    const [name, expr] = criteriaKey.split('$', 2)
+    if (expr) {
+      if (expr in EXPR_MAP) {
         result.push({
-          expr: EXPR_MAP[fn],
-          key,
+          expr: EXPR_MAP[expr],
+          name,
           value: criteria[criteriaKey],
         })
       }
       else {
-        throw new Error(`invalid expression $${fn}`)
+        throw new Error(`invalid expression $${expr} (${criteriaKey}: ${criteria[criteriaKey]})`)
       }
     }
     else {
       result.push({
         expr: expr_eqeq, // default is not strict equal
-        key,
+        name: name,
         value: criteria[criteriaKey],
       })
     }
@@ -148,10 +148,10 @@ export function parse(criteria: object): ParsedCriteria[] {
   return result
 }
 
-export function test(x: any, parsed: ParsedCriteria[]) {
+export function test(x: any, parsed: ParsedCriteria[]): boolean {
   for (const p of parsed) {
-    if (p.key) {
-      if (!p.expr(x[p.key], p.value)) {
+    if (p.name) {
+      if (!p.expr(x[p.name], p.value)) {
         return false
       }
     }
