@@ -2,7 +2,7 @@ import {join, parse} from 'node:path'
 import {filter as whereFilter, find as whereFind} from '@common/where'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
-import {getHash, now, randomString, RESOURCES_DIR} from '@main/utils'
+import {hashFromFile, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import fse from 'fs-extra'
@@ -129,7 +129,7 @@ export class PieceProvider {
       placeholderFile = join(RESOURCES_DIR, 'placeholder.obj')
     }
 
-    const hash = await getHash(placeholderFile)
+    const hash = await hashFromFile(placeholderFile)
 
     const piece = this.createFromObject({
       id,
@@ -157,7 +157,7 @@ export class PieceProvider {
   async createFromFile(dir: string, name: string, role = PieceRoleEnum.asset) {
     const file = join(dir, name)
     const id = this._generateUniqId()
-    const hash = await getHash(file)
+    const hash = await hashFromFile(file)
     const type = this.getTypeByName(name)
     const isDirty = false
 
@@ -180,7 +180,7 @@ export class PieceProvider {
   async updateFromFile(piece: Piece) {
     piece.isDirty = false
 
-    const hash = await getHash(piece.fullPath)
+    const hash = await hashFromFile(piece.fullPath)
     if (hash !== piece.hash) {
       piece.hash = hash
       piece.updatedAt = now()
