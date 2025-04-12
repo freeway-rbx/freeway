@@ -1,5 +1,6 @@
 import {Buffer} from 'node:buffer'
-import crypto from 'node:crypto'
+import crypto, {BinaryLike} from 'node:crypto'
+
 import fs from 'node:fs/promises'
 import {join, normalize} from 'node:path'
 import process from 'node:process'
@@ -11,7 +12,7 @@ import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
 
-export async function getHash(filePath: string): Promise<string> {
+export async function hashFromFile(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     fs.open(filePath, 'r')
       .then((fd) => {
@@ -31,6 +32,13 @@ export async function getHash(filePath: string): Promise<string> {
       })
       .catch(reject)
   })
+}
+
+export function hashFromData(data: BinaryLike): string {
+  return crypto
+    .createHash('md5')
+    .update(data)
+    .digest('hex')
 }
 
 export function now(): number {
