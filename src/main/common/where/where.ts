@@ -139,7 +139,7 @@ export function parse(criteria: object): ParsedCriteria[] {
     else {
       result.push({
         expr: expr_eqeq, // default is not strict equal
-        name: name,
+        name,
         value: criteria[criteriaKey],
       })
     }
@@ -175,6 +175,13 @@ export function filter<T>(array: T[], criteria: object): T[] {
 export function find<T>(array: T[], criteria: object): T | undefined {
   const parsed = parse(criteria)
   return array.find((x) => {
+    return test(x, parsed)
+  })
+}
+
+export function findIndex<T>(array: T[], criteria: object): number {
+  const parsed = parse(criteria)
+  return array.findIndex((x) => {
     return test(x, parsed)
   })
 }

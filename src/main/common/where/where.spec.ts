@@ -1,7 +1,7 @@
-import {filter} from './where'
+import {filter, find, findIndex} from './where'
 
 describe('filter numbers', () => {
-  const array = [
+  const numbers = [
     1,
     2,
     3,
@@ -16,7 +16,7 @@ describe('filter numbers', () => {
       $eqeqeq: 2,
     }
 
-    const res = filter<number>(array, criteria)
+    const res = filter<number>(numbers, criteria)
 
     expect(res.length).toBe(1)
     expect(res[0]).toBe(2)
@@ -28,7 +28,7 @@ describe('filter numbers', () => {
       $lte: 6,
     }
 
-    const res = filter<number>(array, criteria)
+    const res = filter<number>(numbers, criteria)
 
     expect(res.length).toBe(3)
     expect(res[0]).toBe(4)
@@ -44,7 +44,7 @@ describe('filter numbers', () => {
       ],
     }
 
-    const res = filter<number>(array, criteria)
+    const res = filter<number>(numbers, criteria)
     expect(res.length).toBe(2)
     expect(res[0]).toBe(2)
     expect(res[1]).toBe(4)
@@ -63,7 +63,7 @@ describe('filter numbers', () => {
       ],
     }
 
-    const res = filter<number>(array, criteria)
+    const res = filter<number>(numbers, criteria)
     expect(res.length).toBe(2)
     expect(res[0]).toBe(2)
     expect(res[1]).toBe(4)
@@ -71,7 +71,7 @@ describe('filter numbers', () => {
 })
 
 describe('filter objects', () => {
-  const array = [
+  const objects = [
     {a: 1, b: 'aaaaaa'},
     {a: 2, b: 'bbbb42'},
     {a: 3, b: 'cccccc'},
@@ -83,16 +83,16 @@ describe('filter objects', () => {
   ]
 
   it('no element filtered out', async () => {
-    const res = filter<any>(array, {})
+    const res = filter<any>(objects, {})
 
-    expect(res.length).toBe(array.length)
+    expect(res.length).toBe(objects.length)
   })
 
   it('a === 2 (default is eq)', async () => {
     const criteria = {
       a: 2,
     }
-    const res = filter<any>(array, criteria)
+    const res = filter<any>(objects, criteria)
     expect(res.length).toBe(1)
     expect(res[0].a).toBe(2)
   })
@@ -102,7 +102,7 @@ describe('filter objects', () => {
       b$includes: '42',
       a$neq: 2,
     }
-    const res = filter<any>(array, criteria)
+    const res = filter<any>(objects, criteria)
     expect(res.length).toBe(3)
   })
 
@@ -110,8 +110,35 @@ describe('filter objects', () => {
     const criteria = {
       a$in: [1, 2, 3, 4],
     }
-    const res = filter<any>(array, criteria)
+    const res = filter<any>(objects, criteria)
     expect(res.length).toBe(4)
     expect(res[3].a).toBe(4)
+  })
+
+  describe('find objects', () => {
+    const objects = [
+      {a: 1, b: 'aaaaaa'},
+      {a: 2, b: 'bbbb42'},
+      {a: 3, b: 'cccccc'},
+      {a: 4, b: 'dddd42'},
+      {a: 5, b: 'aaaa22'},
+      {a: 6, b: 'aaaa00'},
+      {a: 7, b: 'bbbb42'},
+      {a: 8, b: '424242'},
+    ]
+
+    const criteria = {
+      a: 2,
+    }
+
+    it('object.a == 2', async () => {
+      const found = find<any>(objects, criteria)
+      expect(found.a).toBe(2)
+    })
+
+    it('index a == 2', async () => {
+      const foundIndex = findIndex<any>(objects, criteria)
+      expect(foundIndex).toBe(1)
+    })
   })
 })
