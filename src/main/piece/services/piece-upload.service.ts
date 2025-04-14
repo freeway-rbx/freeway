@@ -5,7 +5,7 @@ import {now} from '@main/utils'
 
 import {Injectable, Logger} from '@nestjs/common'
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter'
-import {Piece, PieceUpload} from './piece'
+import {Piece, PieceUpload} from '../piece'
 
 @Injectable()
 export class PieceUploadService {

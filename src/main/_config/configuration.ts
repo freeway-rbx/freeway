@@ -17,6 +17,7 @@ export function configuration() {
       isAutoUpload: false,
       deletedTimeout: 60_000, // ms
       watchDirectory: join(app.getPath('home'), 'freeway/files'),
+      gltfDirectory: join(app.getPath('home'), 'freeway/.gltf'),
       metadataPath: join(app.getPath('home'), 'freeway/metadata.json'),
       uploadQueue: {
         delay: 50,
@@ -70,6 +71,7 @@ export interface ConfigurationPiece {
   isAutoUpload: boolean
   deletedTimeout: number
   watchDirectory: string
+  gltfDirectory: string
   metadataPath: string
   uploadQueue: {
     delay: number

@@ -8,7 +8,7 @@ import {OnEvent} from '@nestjs/event-emitter'
 import fse from 'fs-extra'
 import {glob} from 'glob'
 import pMap from 'p-map'
-import {Piece} from './piece'
+import {Piece} from '../piece'
 
 const LINK_NAME_GLOB = '*.*'
 

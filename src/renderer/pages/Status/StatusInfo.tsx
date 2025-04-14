@@ -21,6 +21,9 @@ export default function StatusInfo() {
         <Box>
           <Heading size="md">Directories</Heading>
           <Text>
+            <Link onClick={onClickReveal(testData.gltfDirectory)}>{testData.gltfDirectory}</Link>
+          </Text>
+          <Text>
             <Link onClick={onClickReveal(testData.watchDirectory)}>{testData.watchDirectory}</Link>
           </Text>
           <Text>

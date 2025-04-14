@@ -72,6 +72,7 @@ export class AppController {
       studioLinksDir: STUDIO_LINKS_DIR,
       studioPluginsDir: STUDIO_PLUGINS_DIR,
       watchDirectory: this.config.get<ConfigurationPiece>('piece').watchDirectory,
+      gltfDirectory: this.config.get<ConfigurationPiece>('piece').gltfDirectory,
       logsDirectory: this.config.get<ConfigurationLog>('log').directory,
       // 'process.resourcesPath': process.resourcesPath,
       // 'app.getAppPath()': app.getAppPath(),

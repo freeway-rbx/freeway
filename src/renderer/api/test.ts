@@ -6,6 +6,7 @@ export interface GetApiTestDto {
   studioLinksDir: string // Directory path as a string
   studioPluginsDir: string // Directory path as a string
   watchDirectory: string // Directory path as a string
+  gltfDirectory: string // Directory path as a string
   logsDirectory: string // Directory path as a string
 }
 

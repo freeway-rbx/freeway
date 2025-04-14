@@ -2,10 +2,11 @@ import {createReadStream} from 'node:fs'
 import {CreatePieceDto} from '@main/piece/dto'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
-import {PieceLinkService} from '@main/piece/piece-link.service'
-import {PieceNotificationService} from '@main/piece/piece-notification.service'
-import {PieceUploadService} from '@main/piece/piece-upload.service'
-import {PieceService} from '@main/piece/piece.service'
+import {PieceLinkService} from '@main/piece/services/piece-link.service'
+import {PieceNotificationService} from '@main/piece/services/piece-notification.service'
+import {PieceUploadService} from '@main/piece/services/piece-upload.service'
+import {PieceGltfService} from '@main/piece/services/piece.gltf.service'
+import {PieceService} from '@main/piece/services/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {
   Body,
@@ -23,6 +24,7 @@ import {
 export class PieceController {
   constructor(
     private readonly pieceService: PieceService,
+    private readonly pieceGltfService: PieceGltfService,
     private readonly pieceUploadService: PieceUploadService,
     private readonly pieceNotificationService: PieceNotificationService,
     private readonly pieceLinkService: PieceLinkService,
@@ -65,7 +67,7 @@ export class PieceController {
   @Get('/:id/metadata')
   async getMetadata(@Param('id') id: string) {
     const piece = this.pieceService.getPieceById(id)
-    return this.pieceService.getPieceMetadata(piece)
+    return this.pieceGltfService.getPieceMetadata(piece)
   }
 
   @Get('/:id/preview')
