@@ -1,13 +1,12 @@
 import {Buffer} from 'node:buffer'
 import crypto, {BinaryLike} from 'node:crypto'
-
 import fs from 'node:fs/promises'
 import {join, normalize} from 'node:path'
 import process from 'node:process'
 import {is} from '@electron-toolkit/utils'
 import * as GLTF from '@gltf-transform/core'
 import {studioContentPath, studioPluginsPath} from '@roblox-integrations/roblox-install'
-import {vec3} from 'gl-matrix'
+import {mat4, vec3} from 'gl-matrix' // todo: replace with import {vec3} from '@gltf-transform/core/src/constants' ??
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
@@ -128,6 +127,90 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
   }
 }
 
+export async function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
+  const vertices = []
+  const rawFaces = []
+  const normals = []
+  const uvs = []
+  const faceUVs = []
+
+  mesh.listPrimitives().forEach((primitive) => {
+    const positionAccessor = primitive.getAttribute('POSITION')
+    const normalAccessor = primitive.getAttribute('NORMAL')
+    const uvAccessor = primitive.getAttribute('TEXCOORD_0')
+    const indicesAccessor = primitive.getIndices()
+
+    const positionOffset = vertices.length
+    const normalOffset = normals.length
+    const uvOffset = uvs.length
+
+    if (positionAccessor) {
+      for (let i = 0; i < positionAccessor.getCount(); i++) {
+        const vertex = vec3.create()
+        positionAccessor.getElement(i, vertex as Array<number>)
+        if (transform) {
+          vec3.transformMat4(vertex, vertex, transform)
+        }
+        vertices.push(Array.from(vertex))
+      }
+    }
+
+    if (normalAccessor) {
+      for (let i = 0; i < normalAccessor.getCount(); i++) {
+        const normal = vec3.create()
+        normalAccessor.getElement(i, normal as Array<number>)
+        if (transform) {
+          vec3.transformMat4(normal, normal, transform)
+        }
+        normals.push(Array.from(normal))
+      }
+    }
+
+    if (uvAccessor) {
+      for (let i = 0; i < uvAccessor.getCount(); i++) {
+        const uv = vec3.create()
+        uvAccessor.getElement(i, uv as Array<number>)
+        uvs.push([uv[0], uv[1]])
+      }
+    }
+
+    if (indicesAccessor) {
+      for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
+        const face = [
+          positionOffset + indicesAccessor.getScalar(i) + 1,
+          normalOffset + indicesAccessor.getScalar(i + 1) + 1,
+          uvOffset + indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
+        ]
+        rawFaces.push(face)
+
+        if (uvAccessor) {
+          faceUVs.push([
+            uvs[face[0] - 1],
+            uvs[face[1] - 1],
+            uvs[face[2] - 1],
+          ])
+        }
+      }
+    }
+  })
+
+  const faces = []
+  rawFaces.forEach((face: Array<number>) => {
+    faces.push({v: [
+      [face[0], face[0], face[0]],
+      [face[1], face[1], face[1]],
+      [face[2], face[2], face[2]],
+    ]})
+  })
+
+  return {
+    v: vertices, // vertices, can be transformed
+    vn: normals, // normals, can be transformed
+    uv: uvs, // uvs
+    faces,
+  }
+}
+
 async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
   const io = new GLTF.NodeIO()
   const document = await io.read(filePath)
@@ -138,97 +221,29 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
 
   scene.traverse((node: GLTF.Node) => {
     if (node.getMesh() != null) {
-      const mesh = node.getMesh()
-      const transform = node.getWorldMatrix()
-      const vertices = []
-      const faces = []
-      const normals = []
-      const uvs = []
-      const faceUVs = []
+      const gltfMesh = node.getMesh()
 
-      mesh.listPrimitives().forEach((primitive) => {
-        const positionAccessor = primitive.getAttribute('POSITION')
-        const normalAccessor = primitive.getAttribute('NORMAL')
-        const indicesAccessor = primitive.getIndices()
-        const uvAccessor = primitive.getAttribute('TEXCOORD_0')
-
-        const positionOffset = vertices.length
-        const normalOffset = normals.length
-        const uvOffset = uvs.length
-
-        if (positionAccessor) {
-          for (let i = 0; i < positionAccessor.getCount(); i++) {
-            const vertex = vec3.create()
-            positionAccessor.getElement(i, vertex as Array<number>)
-            vec3.transformMat4(vertex, vertex, transform)
-            vertices.push(Array.from(vertex))
-          }
-        }
-
-        if (normalAccessor) {
-          for (let i = 0; i < normalAccessor.getCount(); i++) {
-            const normal = vec3.create()
-            normalAccessor.getElement(i, normal as Array<number>)
-            vec3.transformMat4(normal, normal, transform)
-            normals.push(Array.from(normal))
-          }
-        }
-
-        if (uvAccessor) {
-          for (let i = 0; i < uvAccessor.getCount(); i++) {
-            const uv = vec3.create()
-            uvAccessor.getElement(i, uv as Array<number>)
-            uvs.push([uv[0], uv[1]])
-          }
-        }
-
-        if (indicesAccessor) {
-          for (let i = 0; i < indicesAccessor.getCount(); i += 3) {
-            const face = [
-              positionOffset + indicesAccessor.getScalar(i) + 1,
-              normalOffset + indicesAccessor.getScalar(i + 1) + 1,
-              uvOffset + indicesAccessor.getScalar(i + 2) + 1, // +1 is to match Roblox EditableMesh faces notation
-            ]
-            faces.push(face)
-
-            if (uvAccessor) {
-              faceUVs.push([
-                uvs[face[0] - 1],
-                uvs[face[1] - 1],
-                uvs[face[2] - 1],
-              ])
-            }
-          }
-        }
-      })
-      const gltfMesh = {
-        name: node.getName(),
-        transform: Array.from(transform),
-        vertices,
-        faces,
-        uvs,
-        normals,
+      if (!gltfMesh) {
+        return
       }
 
-      result.push(gltfMesh)
-    }
-  })
+      const transform = node.getWorldMatrix()
+      const myMesh = extractRbxMesh(gltfMesh, transform)
 
-  const transformedFaces = []
-  result[0].faces.forEach((face: Array<number>) => {
-    transformedFaces.push({v: [
-      [face[0], face[0], face[0]],
-      [face[1], face[1], face[1]],
-      [face[2], face[2], face[2]],
-    ]})
+      result.push({
+        name: node.getName(),
+        transform,
+        ...myMesh,
+      })
+    }
   })
 
   return {
     name: result[0].name,
-    v: result[0].vertices,
-    uv: result[0].uvs,
-    vn: result[0].normals,
-    faces: transformedFaces,
+    v: result[0].v,
+    uv: result[0].uv,
+    vn: result[0].vn,
+    faces: result[0].faces,
   }
 }
 
