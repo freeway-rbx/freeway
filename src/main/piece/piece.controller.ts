@@ -2,12 +2,16 @@ import {createReadStream} from 'node:fs'
 import {CreatePieceDto} from '@main/piece/dto'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
+import {PieceGltfParser} from '@main/piece/parser/piece.gltf.parser'
+import {RbxNode} from '@main/piece/parser/types'
+import {toArray} from '@main/piece/parser/utils'
 import {PieceLinkService} from '@main/piece/services/piece-link.service'
 import {PieceNotificationService} from '@main/piece/services/piece-notification.service'
 import {PieceUploadService} from '@main/piece/services/piece-upload.service'
 import {PieceGltfService} from '@main/piece/services/piece.gltf.service'
 import {PieceService} from '@main/piece/services/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
+import {extractRbxMesh} from '@main/utils'
 import {
   Body,
   Controller,
@@ -62,6 +66,25 @@ export class PieceController {
   @Get('/:id/raw')
   async getRaw(@Param('id') id: string) {
     return this.pieceService.getRaw(id)
+  }
+
+  @Get('/:id/mesh/:key')
+  async getMesh(@Param('id') id: string, @Param('key') key: string) {
+    const piece = this.pieceService.getPieceById(id)
+
+    const parser = new PieceGltfParser(piece)
+    const doc = await parser.parse()
+
+    const node = toArray(doc).find(x => x.id === key) as RbxNode
+    if (!node) {
+      return null // TODO: not found?
+    }
+
+    if (!node._mesh) {
+      return null
+    }
+
+    return extractRbxMesh(node._mesh)
   }
 
   @Get('/:id/metadata')
