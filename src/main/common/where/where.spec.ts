@@ -114,31 +114,41 @@ describe('filter objects', () => {
     expect(res.length).toBe(4)
     expect(res[3].a).toBe(4)
   })
+})
 
-  describe('find objects', () => {
-    const objects = [
-      {a: 1, b: 'aaaaaa'},
-      {a: 2, b: 'bbbb42'},
-      {a: 3, b: 'cccccc'},
-      {a: 4, b: 'dddd42'},
-      {a: 5, b: 'aaaa22'},
-      {a: 6, b: 'aaaa00'},
-      {a: 7, b: 'bbbb42'},
-      {a: 8, b: '424242'},
-    ]
+describe('find objects', () => {
+  const objects = [
+    {a: 1, b: 'aaaaaa'},
+    {a: 2, b: 'bbbb42'},
+    {a: 3, b: 'cccccc'},
+    {a: 4, b: 'dddd42'},
+    {a: 5, b: 'aaaa22'},
+    {a: 6, b: 'aaaa00'},
+    {a: 7, b: 'bbbb42'},
+    {a: 8, b: '424242'},
+  ]
 
-    const criteria = {
-      a: 2,
-    }
+  const criteria = {
+    a: 2,
+  }
 
-    it('object.a == 2', async () => {
-      const found = find<any>(objects, criteria)
-      expect(found.a).toBe(2)
-    })
+  it('object.a == 2', async () => {
+    const found = find<any>(objects, criteria)
+    expect(found.a).toBe(2)
+  })
 
-    it('index a == 2', async () => {
-      const foundIndex = findIndex<any>(objects, criteria)
-      expect(foundIndex).toBe(1)
-    })
+  it('object not found (undefined)', async () => {
+    const foundIndex = find<any>(objects, {a: 42})
+    expect(foundIndex).toBe(undefined)
+  })
+
+  it('index a == 2', async () => {
+    const foundIndex = findIndex<any>(objects, criteria)
+    expect(foundIndex).toBe(1)
+  })
+
+  it('index not found (-1)', async () => {
+    const foundIndex = findIndex<any>(objects, {a: 42})
+    expect(foundIndex).toBe(-1)
   })
 })

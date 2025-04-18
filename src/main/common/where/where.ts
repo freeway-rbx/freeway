@@ -65,7 +65,7 @@ function expr_in(a: any, values: any[]) {
 
 function expr_or(x: any, arrayCriteria: object[]) {
   if (!Array.isArray(arrayCriteria)) {
-    throw new TypeError('$or arrayCriteria must be an array')
+    throw new InvalidArrayCriteriaError(`expr_or arrayCriteria must be an array, given ${typeof arrayCriteria}`)
   }
 
   return arrayCriteria.map(parse).some((parsed) => {
@@ -75,7 +75,7 @@ function expr_or(x: any, arrayCriteria: object[]) {
 
 function expr_and(x: any, arrayCriteria: object[]) {
   if (!Array.isArray(arrayCriteria)) {
-    throw new TypeError('$and arrayCriteria must be an array')
+    throw new InvalidArrayCriteriaError(`expr_and arrayCriteria must be an array, given ${typeof arrayCriteria}`)
   }
 
   return arrayCriteria.map(parse).every((parsed) => {
@@ -123,26 +123,16 @@ export interface ParsedCriteria {
 export function parse(criteria: object): ParsedCriteria[] {
   const result: ParsedCriteria[] = []
   for (const criteriaKey in criteria) {
-    const [name, expr] = criteriaKey.split('$', 2)
-    if (expr) {
-      if (expr in EXPR_MAP) {
-        result.push({
-          expr: EXPR_MAP[expr],
-          name,
-          value: criteria[criteriaKey],
-        })
-      }
-      else {
-        throw new Error(`invalid expression $${expr} (${criteriaKey}: ${criteria[criteriaKey]})`)
-      }
+    let [name, expr] = criteriaKey.split('$', 2)
+    expr ??= 'eqeq' // default expression
+    if (!Object.prototype.hasOwnProperty.call(EXPR_MAP, expr)) {
+      throw new InvalidExpressionError(`invalid expression $${expr} (${criteriaKey}: ${criteria[criteriaKey]})`)
     }
-    else {
-      result.push({
-        expr: expr_eqeq, // default is not strict equal
-        name,
-        value: criteria[criteriaKey],
-      })
-    }
+    result.push({
+      expr: EXPR_MAP[expr],
+      name,
+      value: criteria[criteriaKey],
+    })
   }
 
   return result
@@ -150,19 +140,16 @@ export function parse(criteria: object): ParsedCriteria[] {
 
 export function test(x: any, parsed: ParsedCriteria[]): boolean {
   for (const p of parsed) {
-    if (p.name) {
-      if (!p.expr(x[p.name], p.value)) {
-        return false
-      }
-    }
-    else {
-      if (!p.expr(x, p.value)) {
-        return false
-      }
+    if (!p.expr(get(x, p.name), p.value)) {
+      return false
     }
   }
 
   return true
+}
+
+export function get(x: any, path: string | undefined): unknown {
+  return path ? x[path] : x
 }
 
 export function filter<T>(array: T[], criteria: object): T[] {
@@ -185,3 +172,6 @@ export function findIndex<T>(array: T[], criteria: object): number {
     return test(x, parsed)
   })
 }
+
+export class InvalidExpressionError extends Error {}
+export class InvalidArrayCriteriaError extends InvalidExpressionError {}
