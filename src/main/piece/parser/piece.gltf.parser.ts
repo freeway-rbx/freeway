@@ -4,7 +4,6 @@ import {Mesh} from '@gltf-transform/core'
 import {MATERIAL_MAP_DEFINITIONS} from '@main/piece/parser/constants'
 import {RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot, RbxScene} from '@main/piece/parser/types'
 import {
-  extractRbxMesh,
   hashFromData,
 } from '@main/utils'
 import {Injectable} from '@nestjs/common'
@@ -50,9 +49,7 @@ export class PieceGltfParser {
   }
 
   async createMaterial(material: GLTF.Material): Promise<RbxMaterial> {
-    const name = material.getName()
     return {
-      id: hashFromData(name), // TODO: generate id, not md5
       name: material.getName(),
       channels: await this.extractMaterialChannels(material),
     }
@@ -101,7 +98,6 @@ export class PieceGltfParser {
     const gltfMesh = gltfNode.getMesh()
 
     if (gltfMesh) {
-      node.id = hashFromData(node.name) // TODO generate id
       node.isMesh = true
       node.meshName = gltfMesh.getName()
 
@@ -132,10 +128,6 @@ export class PieceGltfParser {
       node.children.push(myChild)
       this.createChildren(child, myChild)
     })
-  }
-
-  private extractMesh(gNode: GLTF.Node) {
-    return extractRbxMesh(gNode.getMesh())
   }
 
   private extractMaterials(mesh: Mesh) {

@@ -1,4 +1,4 @@
-import {Node} from '@main/piece/parser/types'
+import {Node} from './types'
 
 export function traverse(node: Node, fn: (node: Node) => void) {
   fn(node)

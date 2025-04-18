@@ -1,43 +1,134 @@
-import {find} from '@common/where'
-import {Node, RbxNode, RbxRoot} from '@main/piece/parser/types'
+import {find, find as whereFind} from '@common/where'
+import {Node, RbxMaterial, RbxMaterialChannel, RbxNode} from '@main/piece/parser/types'
 import {toArray} from '@main/piece/parser/utils'
 import {
   now,
+  randomString,
 } from '@main/utils'
-import {Injectable} from '@nestjs/common'
-import {Piece} from '../piece'
 
-@Injectable()
+interface Change<T, K = unknown> {
+  source: T
+  target: T
+  changes?: Change<K>[]
+}
+
 export class PieceGltfMerger {
-  constructor(
-    private readonly piece: Piece,
-  ) {}
+  private sourceNodes: Node[]
+  private targetNodes: Node[]
 
-  async mergeNode(source: RbxNode, target: RbxNode) {
+  private sourceMaterials: RbxMaterial[]
+  private targetMaterials: RbxMaterial[]
+
+  mergeNode(source: RbxNode, target: RbxNode) {
     if (target.isMesh) {
       target.id = source.id
 
       if (target.hash !== source.hash) {
         target.updatedAt = now()
+        return true
       }
     }
+
+    return false
   }
 
-  async merge(source: RbxRoot, target: RbxRoot) {
-    const sourceArr = toArray(source as Node)
-    const targetArr = toArray(target as Node)
+  mergeNodes(sourceNode: Node, targetNode: Node) {
+    const changes: Change<Node>[] = []
+    this.sourceNodes = toArray(sourceNode)
+    this.targetNodes = toArray(targetNode)
 
-    const deletedOldNodes = []
+    const deletedSourceNodes = []
 
-    sourceArr.forEach((s) => {
-      const t = find(targetArr, {_isVisited: false, name: s.name})
+    this.sourceNodes.forEach((source) => {
+      const target = find(this.targetNodes, {_isVisited: false, name: source.name})
 
-      if (t) {
-        this.mergeNode(s, t)
+      if (target) {
+        const hasChanges = this.mergeNode(source, target)
+        if (hasChanges) {
+          changes.push({source, target})
+        }
       }
       else {
-        deletedOldNodes.push(s)
+        deletedSourceNodes.push(source)
+        changes.push({source, target: null})
       }
     })
+
+    this.targetNodes.forEach((target: RbxNode) => {
+      if (target.isMesh && !target.id) {
+        target.id = this._generateUniqId(this.targetNodes, 3)
+        changes.push({source: null, target})
+      }
+    })
+
+    return changes
+  }
+
+  mergeMaterial(sourceMaterial: RbxMaterial, targetMaterial: RbxMaterial) {
+    const changes: Change<RbxMaterialChannel>[] = []
+
+    targetMaterial.id = sourceMaterial.id
+
+    sourceMaterial.channels.forEach((source) => {
+      const target = targetMaterial.channels.find(x => source.name === x.name)
+
+      if (!target) {
+        changes.push({source, target: null})
+        return
+      }
+
+      if (target.hash !== source.hash) {
+        target.updatedAt = now()
+        changes.push({source, target})
+      }
+    })
+
+    targetMaterial.channels.forEach((target) => {
+      const source = sourceMaterial.channels.find(x => target.name === x.name)
+      if (!source) {
+        changes.push({source: null, target})
+      }
+    })
+
+    return changes
+  }
+
+  mergeMaterials(sourceMaterials: RbxMaterial[], targetMaterials: RbxMaterial[]) {
+    this.sourceMaterials = sourceMaterials
+    this.targetMaterials = targetMaterials
+    const changes: Change<RbxMaterial, RbxMaterialChannel>[] = []
+
+    this.sourceMaterials.forEach((source) => {
+      const target = find(this.targetMaterials, {name: source.name})
+
+      if (!target) {
+        changes.push({source, target: null})
+        return
+      }
+
+      const materialChannelChanges = this.mergeMaterial(source, target)
+      if (materialChannelChanges.length) {
+        changes.push({source, target, changes: materialChannelChanges})
+      }
+    })
+
+    this.targetMaterials.forEach((target) => {
+      if (!target.id) {
+        target.id = this._generateUniqId(this.targetMaterials, 2)
+        changes.push({source: null, target})
+      }
+    })
+
+    return changes
+  }
+
+  private _generateUniqId(arr: any[], length: number = 3) {
+    for (let i = 0; /* to the moon */; i++) {
+      const id = randomString(Math.floor(i / 10 + length))
+
+      if (!whereFind<RbxNode>(arr, {id})) {
+        return id
+      }
+    }
   }
 }
