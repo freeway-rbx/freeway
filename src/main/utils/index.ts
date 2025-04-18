@@ -127,7 +127,7 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
   }
 }
 
-export async function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
+export function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
   const vertices = []
   const rawFaces = []
   const normals = []
@@ -202,7 +202,6 @@ export async function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
       [face[2], face[2], face[2]],
     ]})
   })
-
   return {
     v: vertices, // vertices, can be transformed
     vn: normals, // normals, can be transformed
@@ -229,7 +228,6 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
 
       const transform = node.getWorldMatrix()
       const myMesh = extractRbxMesh(gltfMesh, transform)
-
       result.push({
         name: node.getName(),
         transform,
@@ -237,7 +235,6 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
       })
     }
   })
-
   return {
     name: result[0].name,
     v: result[0].v,
@@ -286,6 +283,7 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
 
 function translateVertices(mesh: RbxMesh): RbxMesh {
   // bounding box
+  console.log('translateVertices', mesh.name, mesh.v)
   if (mesh.v.length === 0)
     return mesh
   const box = calcBoundingBox(mesh)
