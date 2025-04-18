@@ -6,6 +6,7 @@ import {emitCustomEvent} from 'react-custom-events'
 import {HashRouter} from 'react-router-dom'
 import {AuthProvider} from './providers'
 import {Router} from './router'
+import {SearchProvider} from './contexts/SearchContext/SearchContext'
 
 function App() {
   window.electron.onIpcMessage((message) => {
@@ -20,7 +21,9 @@ function App() {
       <ColorModeProvider>
         <HashRouter>
           <AuthProvider>
-            <Router />
+            <SearchProvider>
+              <Router />
+            </SearchProvider>
           </AuthProvider>
         </HashRouter>
       </ColorModeProvider>
