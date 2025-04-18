@@ -15,7 +15,7 @@ export interface RbxScene extends Node {
 }
 
 export interface RbxMaterial {
-  id: string
+  id?: string
   name: string
   channels: RbxMaterialChannel[]
 }
