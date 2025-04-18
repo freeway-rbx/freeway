@@ -90,7 +90,7 @@ function expr_not(x: any, criteria: object) {
 
 const EXPR_MAP = {
   eq: expr_eqeqeq, // strict equality
-  eqeqeq: expr_eqeqeq, // alias for string equality
+  eqeqeq: expr_eqeqeq, // alias for strict equality
   eqeq: expr_eqeq, // loose equality (not strict)
   neq: expr_neq,
   gt: expr_gt,
