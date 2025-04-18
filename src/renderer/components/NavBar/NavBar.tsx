@@ -8,7 +8,8 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from '@/components/ui/menu'
-import {Box, Button, Flex, HStack, IconButton, Image, Stack, useDisclosure} from '@chakra-ui/react'
+import {useSearch} from '@/contexts/SearchContext/SearchContext'
+import {Box, Button, Flex, HStack, IconButton, Image, Input, Stack, useDisclosure} from '@chakra-ui/react'
 import {useRoutePaths, useSession} from '@render/hooks'
 import {useEffect} from 'react'
 import {MdClose, MdMenu} from 'react-icons/md'
@@ -23,10 +24,13 @@ export default function NavBar() {
   const {STATUS_PATH, ROOT_PATH} = useRoutePaths()
   const location = useLocation()
   const {open, onClose, onToggle} = useDisclosure()
+  const isOnPiecesPage = location.pathname === ROOT_PATH
 
   useEffect(() => {
     onClose()
   }, [location, onClose])
+
+  const {query, setQuery} = useSearch()
 
   function onClickRobloxAccount() {
     if (!user)
@@ -51,6 +55,17 @@ export default function NavBar() {
         </HStack>
         <Flex alignItems="center" gap="2">
           <NavbarUpdateAvailable></NavbarUpdateAvailable>
+          {isOnPiecesPage && (
+            <Input
+              placeholder="Search..."
+              size="sm"
+              variant="outline"
+              maxW="200px"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              display={{base: 'none', md: 'block'}}
+            />
+          )}
           <ColorModeButton></ColorModeButton>
           {isAuthenticated && (
             <MenuRoot>
@@ -70,7 +85,7 @@ export default function NavBar() {
               </MenuContent>
             </MenuRoot>
           )}
-{/*
+          {/*
           {!isAuthenticated && (
             <NavBarLink href={LOGIN_PATH}>Login</NavBarLink>
           )}
