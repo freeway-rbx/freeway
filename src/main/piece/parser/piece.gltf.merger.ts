@@ -1,5 +1,5 @@
 import {find, find as whereFind} from '@common/where'
-import {Node, RbxMaterial, RbxMaterialChannel, RbxNode} from '@main/piece/parser/types'
+import {Node, RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot} from '@main/piece/parser/types'
 import {toArray} from '@main/piece/parser/utils'
 import {
   now,
@@ -130,5 +130,10 @@ export class PieceGltfMerger {
         return id
       }
     }
+  }
+
+  merge(sourceNode: RbxRoot, targetNode: RbxRoot) {
+    this.mergeNodes(sourceNode, targetNode)
+    this.mergeMaterials([], targetNode.materials)
   }
 }

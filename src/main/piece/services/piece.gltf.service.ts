@@ -2,7 +2,7 @@ import {ConfigurationPiece} from '@main/_config/configuration'
 
 import {PieceGltfMerger} from '@main/piece/parser/piece.gltf.merger'
 import {PieceGltfParser} from '@main/piece/parser/piece.gltf.parser'
-import {Node} from '@main/piece/parser/types'
+import {RbxRoot} from '@main/piece/parser/types'
 import {Injectable, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {ensureDir} from 'fs-extra'
@@ -27,12 +27,11 @@ export class PieceGltfService implements OnModuleInit {
 
   async getPieceMetadata(piece: Piece) {
     const parser = new PieceGltfParser(piece)
-    const merger = new PieceGltfMerger()
 
     const doc = await parser.parse()
 
-    merger.mergeNodes({} as Node, doc)
-    merger.mergeMaterials([], doc.materials)
+    const merger = new PieceGltfMerger()
+    merger.merge(piece.root || {} as RbxRoot, doc)
 
     return doc
   }
