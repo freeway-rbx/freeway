@@ -13,6 +13,8 @@ import {Piece} from '../piece'
 
 @Injectable()
 export class PieceGltfParser {
+  private map: Map<RbxNode, GLTF.Node> = new Map()
+
   constructor(
     private readonly piece: Piece,
   ) {}
@@ -101,11 +103,12 @@ export class PieceGltfParser {
       node.isMesh = true
       node.meshName = gltfMesh.getName()
 
-      const materials = this.extractMaterials(gltfMesh)
+      const materials = this.extractMaterialsNames(gltfMesh)
       if (materials?.length) {
         node.materials = materials
       }
 
+      this.map.set(node, gltfNode)
       // node._mesh = gltfMesh
       // node._mesh = this.extractMesh(gltfNode)
     }
@@ -130,7 +133,7 @@ export class PieceGltfParser {
     })
   }
 
-  private extractMaterials(mesh: Mesh) {
+  private extractMaterialsNames(mesh: Mesh) {
     const result = []
     mesh.listPrimitives().forEach((primitive) => {
       const material = primitive.getMaterial()
@@ -148,5 +151,9 @@ export class PieceGltfParser {
     const document = await io.read(this.piece.fullPath)
 
     return this.createRoot(document.getRoot())
+  }
+
+  getGltfNode(obj: RbxNode) {
+    return this.map.get(obj)
   }
 }
