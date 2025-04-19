@@ -106,7 +106,7 @@ export class PieceGltfParser {
         node.materials = materials
       }
 
-      node._mesh = gltfMesh
+      // node._mesh = gltfMesh
       // node._mesh = this.extractMesh(gltfNode)
     }
     else {
