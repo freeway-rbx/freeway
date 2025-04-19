@@ -15,9 +15,11 @@ interface Change<T, K = unknown> {
 export class PieceGltfMerger {
   private sourceNodes: Node[]
   private targetNodes: Node[]
+  private nodesChanges: Change<Node>[]
 
   private sourceMaterials: RbxMaterial[]
   private targetMaterials: RbxMaterial[]
+  private materialsChanges: Change<RbxMaterial>[]
 
   mergeNode(source: RbxNode, target: RbxNode) {
     if (target.isMesh) {
@@ -40,7 +42,7 @@ export class PieceGltfMerger {
     const deletedSourceNodes = []
 
     this.sourceNodes.forEach((source) => {
-      const target = find(this.targetNodes, {_isVisited: false, name: source.name})
+      const target = find(this.targetNodes, {name: source.name})
 
       if (target) {
         const hasChanges = this.mergeNode(source, target)
@@ -133,7 +135,17 @@ export class PieceGltfMerger {
   }
 
   merge(sourceNode: RbxRoot, targetNode: RbxRoot) {
-    this.mergeNodes(sourceNode, targetNode)
-    this.mergeMaterials([], targetNode.materials)
+    this.nodesChanges = this.mergeNodes(sourceNode, targetNode)
+    this.materialsChanges = this.mergeMaterials([], targetNode.materials)
+
+    return this.nodesChanges.length > 0 || this.materialsChanges.length > 0
+  }
+
+  getMaterialsChanges() {
+    return this.materialsChanges
+  }
+
+  getNodesChanges() {
+    return this.nodesChanges
   }
 }
