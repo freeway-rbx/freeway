@@ -12,6 +12,7 @@ import {LogModule} from './log/log.module'
 import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
+import {AnalyticsService} from './analytics/analytics.service'
 
 @Module({
   imports: [
@@ -32,6 +33,12 @@ import {RobloxApiModule} from './roblox-api/roblox-api.module'
     PluginModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    AnalyticsService
+  ],
+  exports: [
+    AnalyticsService
+  ]
 })
 export class AppModule {}
