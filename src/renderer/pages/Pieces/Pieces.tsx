@@ -1,6 +1,9 @@
 import {Button} from '@/components/ui/button'
 import {EmptyState} from '@/components/ui/empty-state'
+import {useSearch} from '@/contexts/SearchContext/SearchContext'
+import {useDebouncedValue} from '@/hooks/useDebouncedValue'
 import {Box, Group, Stack} from '@chakra-ui/react'
+import Fuse from 'fuse.js'
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
@@ -20,6 +23,32 @@ function Pieces() {
   function onReveal() {
     window.electron.reveal()
   }
+
+  const {query} = useSearch()
+  const debouncedQuery = useDebouncedValue(query, 300)
+
+  const fuse = new Fuse(list, {
+    // 🔍 Search all keys deeply
+    keys: [
+      'name',
+      'id',
+      'meshName',
+      'materials',
+      'materials.name',
+      'materials.channels.name',
+      'children.name',
+      'children.meshName',
+      'children.materials',
+      'children.materials.name',
+      'children.materials.channels.name',
+    ],
+    includeScore: true,
+    threshold: 0.4, // lower = more exact
+  })
+
+  const filteredList = debouncedQuery
+    ? fuse.search(debouncedQuery).map(result => result.item)
+    : list
 
   const getApiPieces = async () => {
     setLoading(true)
@@ -70,7 +99,7 @@ function Pieces() {
   return (
     <Box p={4}>
       <Stack gap="2">
-        {list.map(item => (
+        {filteredList.map(item => (
           <PieceItem
             key={item.id}
             item={item}
