@@ -3,7 +3,6 @@ import fetch from 'node-fetch'
 import {app} from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
-import {v4 as uuidv4} from 'uuid'
 import {ConfigService} from '@nestjs/config'
 
 @Injectable()
@@ -20,7 +19,9 @@ export class AnalyticsService {
     if (fs.existsSync(filePath)) {
       this.clientId = JSON.parse(fs.readFileSync(filePath, 'utf-8')).client_id
     } else {
-      this.clientId = uuidv4()
+      const randomPart = Math.floor(Math.random() * 1e10)
+      const timestampPart = Math.floor(Date.now() / 1000)
+      this.clientId = `${randomPart}.${timestampPart}`
       fs.writeFileSync(filePath, JSON.stringify({ client_id: this.clientId }))
     }
   }
@@ -51,6 +52,9 @@ export class AnalyticsService {
           }),
         }
       )
+
+      this.logger.log(`GA Event Sent: ${eventName}`, JSON.stringify({ client_id: this.clientId, eventName, params }))
+      this.logger.log(`Response: ${res.status} - ${await res.text()}`)
 
       if (!res.ok) {
         this.logger.warn(`GA failed: ${res.status} - ${await res.text()}`)

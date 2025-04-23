@@ -1,5 +1,12 @@
-import { ipcRenderer } from 'electron'
+export const sendAnalyticsEvent = async (event: string, params: Record<string, any> = {}) => {
+  try {
+    await window.electron.sendAnalyticsEvent(event, params)
+  } catch (error) {
+    console.error('[Analytics] Failed to send event:', event, error)
+  }
+}
 
-export const sendAnalyticsEvent = (event: string, params: Record<string, any> = {}) => {
-  ipcRenderer.invoke('ga:send', event, params)
+// extend this as needed
+export enum AnalyticsEvent {
+  LoadedPieces = 'loaded_pieces'
 }

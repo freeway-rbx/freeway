@@ -5,7 +5,7 @@ import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
 import PieceItem from './PieceItem/PieceItem'
-import {sendAnalyticsEvent} from "@/utils";
+import {sendAnalyticsEvent, AnalyticsEvent} from "@/utils";
 
 function Loading() {
   return (
@@ -27,6 +27,7 @@ function Pieces() {
     const json = await res.json()
     setList(json || [])
     setLoading(false)
+    sendAnalyticsEvent(AnalyticsEvent.LoadedPieces, { pieces_size: json.length })
   }
 
   useCustomEventListener<any>('piece.created', () => {
@@ -51,7 +52,6 @@ function Pieces() {
   }
 
   if (list?.length === 0) {
-    sendAnalyticsEvent('loaded pieces', { pieces_size: list.length })
     return (
       <Box p="4">
         <EmptyState
