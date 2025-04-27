@@ -78,7 +78,7 @@ export class PieceService {
       }
       catch (err: any) {
         this.logger.error('Unable to write piece file', err)
-        this.provider.hardDelete(piece) // revert back, delete created piece
+        await this.provider.hardDelete(piece) // revert back, delete created piece
         throw new UnprocessableEntityException(`Unable to write piece file (${err.message})`)
       }
     }
