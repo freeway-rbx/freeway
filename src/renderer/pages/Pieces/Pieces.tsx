@@ -8,6 +8,7 @@ import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
 import PieceItem from './PieceItem/PieceItem'
+import {sendAnalyticsEvent, AnalyticsEvent} from "@/utils";
 
 function Loading() {
   return (
@@ -55,6 +56,7 @@ function Pieces() {
     const json = await res.json()
     setList(json || [])
     setLoading(false)
+    sendAnalyticsEvent(AnalyticsEvent.LoadedPieces, { pieces_size: json.length })
   }
 
   useCustomEventListener<any>('piece.created', () => {

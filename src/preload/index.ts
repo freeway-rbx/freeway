@@ -22,6 +22,8 @@ const electron = {
   onIpcMessage: (cb: (event: {name: string, data: any}) => any) => ipcRenderer.on('ipc-message', (_, event: {name: string, data: any}) => {
     cb(event)
   }),
+  sendAnalyticsEvent: (event: string, params: Record<string, any>) =>
+    ipcRenderer.invoke('ga:send', event, params),
 }
 
 // Custom APIs for renderer
