@@ -75,20 +75,22 @@ export class PieceLinkService {
   }
 
   @OnEvent(PieceEventEnum.watcherReady)
-  async handlePieceInitiated() {
+  async handleWatcherReady() {
     await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.created)
   async handlePieceCreated(_piece: Piece) {
-    // await this.ensureLink(_piece)
-    await this.syncLinks()
+    // TODO user syncLinks in queue
+    await this.ensureLink(_piece)
+    // await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.changed)
   async handlePieceChanged(_piece: Piece) {
-    // await this.ensureLink(_piece)
-    await this.syncLinks()
+    // TODO user syncLinks in queue
+    await this.ensureLink(_piece)
+    // await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.deleted)

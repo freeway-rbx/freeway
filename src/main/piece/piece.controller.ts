@@ -64,16 +64,33 @@ export class PieceController {
     return this.pieceService.getRaw(id)
   }
 
-  @Get('/:id/mesh/:key')
-  async getMesh(@Param('id') id: string, @Param('key') key: string) {
+  @Get('/:id/mesh/:meshId')
+  async getMesh(@Param('id') id: string, @Param('meshId') meshId: string) {
     const piece = this.pieceService.getPieceById(id)
-    return this.pieceGltfService.getRbxMesh(piece, key)
+    return this.pieceGltfService.getMesh(piece, meshId)
+  }
+
+  @Get('/:id/material/:materialId')
+  async getMaterial(@Param('id') id: string, @Param('materialId') materialId: string) {
+    const piece = this.pieceService.getPieceById(id)
+    return this.pieceGltfService.getMaterial(piece, materialId)
+  }
+
+  @Get('/:id/material/:materialId/channel/:channel')
+  async getMaterialChannel(
+    @Param('id') id: string,
+    @Param('materialId') materialId: string,
+    @Param('channel') channel: string,
+  ) {
+    const piece = this.pieceService.getPieceById(id)
+    return this.pieceGltfService.getMaterialChannel(piece, materialId, channel)
   }
 
   @Get('/:id/metadata')
   async getMetadata(@Param('id') id: string) {
+    // TODO: REMOVE, useless
     const piece = this.pieceService.getPieceById(id)
-    return this.pieceGltfService.getPieceMetadata(piece)
+    return piece.metadata
   }
 
   @Get('/:id/preview')

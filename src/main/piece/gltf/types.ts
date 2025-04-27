@@ -32,7 +32,10 @@ export interface RbxNode extends Node {
 
 export interface RbxMaterialChannel {
   name: string
-  hash?: string
-  image?: sharp.Sharp
+  hash: string
   updatedAt?: number
+}
+
+export interface RbxMaterialChannelRaw extends RbxMaterialChannel {
+  image?: sharp.Sharp
 }

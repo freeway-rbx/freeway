@@ -2,21 +2,20 @@ export const MATERIAL_MAP_DEFINITIONS = [
   {
     method: 'getBaseColorTexture',
     channels: [
-      {name: 'basecolor', extractChannel: null},
+      {name: 'b', extractChannel: null},
     ],
   },
   {
     method: 'getNormalTexture',
     channels: [
-      {name: 'normal', extractChannel: null},
+      {name: 'n', extractChannel: null},
     ],
   },
   {
     method: 'getMetallicRoughnessTexture',
     channels: [
-      {name: 'roughness', extractChannel: 1},
-      {name: 'metalness', extractChannel: 2},
+      {name: 'r', extractChannel: 1},
+      {name: 'm', extractChannel: 2},
     ],
   },
 ]
-

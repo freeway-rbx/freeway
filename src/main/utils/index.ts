@@ -6,10 +6,12 @@ import process from 'node:process'
 import {is} from '@electron-toolkit/utils'
 import * as GLTF from '@gltf-transform/core'
 import {studioContentPath, studioPluginsPath} from '@roblox-integrations/roblox-install'
+import fse from 'fs-extra'
 import {mat4, vec3} from 'gl-matrix' // todo: replace with import {vec3} from '@gltf-transform/core/src/constants' ??
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
+import sharp from 'sharp'
 
 export async function hashFromFile(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -367,6 +369,22 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
     counter += 1
   }
   return result
+}
+
+export async function writeString(path: string, data: string) {
+  await fse.writeFile(path, data, {encoding: 'utf8'})
+}
+
+export async function writeJson(path: string, data: any) {
+  await fse.outputJSON(path, data, {encoding: 'utf8'})
+}
+
+export async function writeImage(path: string, image: sharp.Sharp) {
+  image.resize(1024, 1024, {
+    fit: sharp.fit.inside,
+    withoutEnlargement: true,
+  })
+  await image.toFile(path)
 }
 
 export const RESOURCES_DIR = is.dev

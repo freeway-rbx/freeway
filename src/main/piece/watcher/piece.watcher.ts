@@ -3,6 +3,7 @@ import {join} from 'node:path'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap} from '@main/piece/enum'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
+import {Piece} from '@main/piece/piece'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
 import {Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
@@ -16,7 +17,7 @@ import micromatch from 'micromatch'
 export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicationBootstrap {
   protected isReady: boolean
   protected isInitialScanned: boolean
-  protected isApplicationBootstrapped: boolean;
+  protected isApplicationBootstrapped: boolean
   protected readonly logger = new Logger(PieceWatcher.name)
   protected readonly options: ConfigurationPiece
   private subscription: AsyncSubscription = null
@@ -44,6 +45,13 @@ export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicatio
   async onModuleInit(): Promise<void> {
     await ensureDir(this.options.watchDirectory)
     await this.provider.load()
+  }
+
+  async onApplicationBootstrap() {
+    this.isApplicationBootstrapped = true
+    if (this.isInitialScanned) {
+      this.checkIsReady()
+    }
 
     // async manner
     this.initialScan()
@@ -56,13 +64,6 @@ export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicatio
       .then(() => {
         this.logger.log('Started watching...')
       })
-  }
-
-  async onApplicationBootstrap() {
-    this.isApplicationBootstrapped = true
-    if (this.isInitialScanned) {
-      this.checkIsReady()
-    }
   }
 
   async onModuleDestroy() {
@@ -156,30 +157,42 @@ export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicatio
 
   async onInit(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
-    let piece = this.provider.findOne({dir, name})
+    const piece = this.provider.findOne({dir, name})
     if (!piece) {
-      piece = await this.provider.createFromFile(dir, name)
+      await this.createFromFile(dir, name)
     }
     else {
-      await this.provider.updateFromFile(piece)
+      await this.updateFromFile(piece)
     }
 
-    this.eventEmitter.emit(PieceEventEnum.initiated, piece)
+    // this.eventEmitter.emit(PieceEventEnum.initiated, piece)
   }
 
   async onChange(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
-    let piece = this.provider.findOne({dir, name})
+    const piece = this.provider.findOne({dir, name})
     if (!piece) {
-      piece = await this.provider.createFromFile(dir, name)
-      this.eventEmitter.emit(PieceEventEnum.created, piece)
+      await this.createFromFile(dir, name)
     }
     else {
-      await this.provider.updateFromFile(piece)
-      this.eventEmitter.emit(PieceEventEnum.changed, piece)
+      await this.updateFromFile(piece)
     }
 
     await this.provider.save() // queue?
+  }
+
+  async createFromFile(dir: string, name: string) {
+    const piece = await this.provider.createFromFile(dir, name)
+    this.eventEmitter.emit(PieceEventEnum.created, piece)
+    return piece
+  }
+
+  async updateFromFile(piece: Piece) {
+    const oldHash = piece.hash
+    await this.provider.updateFromFile(piece)
+    if (oldHash !== piece.hash || true) { // TODO: remove `true` // just for testing
+      this.eventEmitter.emit(PieceEventEnum.changed, piece)
+    }
   }
 
   async onUnlink(queueTask: PieceWatcherQueueTask) {

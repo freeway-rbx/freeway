@@ -1,14 +1,11 @@
-import {find, find as whereFind} from '@common/where'
-import {Node, RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot} from '@main/piece/parser/types'
-import {toArray} from '@main/piece/parser/utils'
-import {
-  now,
-  randomString,
-} from '@main/utils'
+import {find} from '@common/where'
+import {Node, RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot} from '@main/piece/gltf/types'
+import {toArray} from '@main/piece/gltf/utils'
+import {now} from '@main/utils'
 
 interface Change<T, K = unknown> {
-  source: T
-  target: T
+  source?: T
+  target?: T
   changes?: Change<K>[]
 }
 
@@ -96,8 +93,8 @@ export class PieceGltfMerger {
   }
 
   mergeMaterials(sourceMaterials: RbxMaterial[], targetMaterials: RbxMaterial[]) {
-    this.sourceMaterials = sourceMaterials
-    this.targetMaterials = targetMaterials
+    this.sourceMaterials = sourceMaterials || []
+    this.targetMaterials = targetMaterials || []
     const changes: Change<RbxMaterial, RbxMaterialChannel>[] = []
 
     this.sourceMaterials.forEach((source) => {
@@ -125,18 +122,24 @@ export class PieceGltfMerger {
   }
 
   private _generateUniqId(arr: any[], length: number = 3) {
-    for (let i = 0; /* to the moon */; i++) {
-      const id = randomString(Math.floor(i / 10 + length))
+    const max = arr.reduce((acc, val) => {
+      const id = val.id || 0
+      return acc > id ? acc : id
+    }, 0)
 
-      if (!whereFind<RbxNode>(arr, {id})) {
-        return id
-      }
-    }
+    return (Number.parseInt(max, 36) + 1).toString(36).padStart(length, '0')
+    // for (let i = 0; /* to the moon */; i++) {
+    //   const id = randomString(Math.floor(i / 10 + length))
+    //
+    //   if (!whereFind<RbxNode>(arr, {id})) {
+    //     return id
+    //   }
+    // }
   }
 
   merge(sourceNode: RbxRoot, targetNode: RbxRoot) {
     this.nodesChanges = this.mergeNodes(sourceNode, targetNode)
-    this.materialsChanges = this.mergeMaterials([], targetNode.materials)
+    this.materialsChanges = this.mergeMaterials(sourceNode.materials, targetNode.materials)
 
     return this.nodesChanges.length > 0 || this.materialsChanges.length > 0
   }
