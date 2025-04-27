@@ -36,7 +36,7 @@ jobs:
       - name: build-mac
         if: matrix.os == 'macos-latest'
         run: |
-          vars="GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}\nGA_MEASUREMENT_ID=${{ secrets.ANALYTICS_MEASUREMENT_ID}}"
+          vars="GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}\nGA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID}}"
           echo "$vars">.env 
 
           echo "$APPLE_API_KEY_CONTENT" > key.p8  
@@ -65,7 +65,7 @@ jobs:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ANALYTICS_ENV_CONTENT: "GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}◙GA_MEASUREMENT_ID=${{ secrets.ANALYTICS_MEASUREMENT_ID}}" 
+          ANALYTICS_ENV_CONTENT: "GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}◙GA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID}}" 
       - name: release
         uses: softprops/action-gh-release@v1
         with:
