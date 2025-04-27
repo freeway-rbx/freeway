@@ -64,6 +64,21 @@ export class PieceController {
     return this.pieceService.getRaw(id)
   }
 
+  @Get('/:id/raw/:key')
+  async getRawUniversal(@Param('id') id: string, @Param('key') key: string) {
+    const [internalId, channelName] = key.split('-')
+
+    if (internalId && !channelName) {
+      return this.getMesh(id, internalId)
+    }
+
+    if (internalId && channelName) {
+      return this.getMaterialChannelRaw(id, internalId, channelName)
+    }
+
+    return this.pieceService.getRaw(id)
+  }
+
   @Get('/:id/mesh/:meshId')
   async getMesh(@Param('id') id: string, @Param('meshId') meshId: string) {
     const piece = this.pieceService.getPieceById(id)
