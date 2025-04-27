@@ -6,6 +6,7 @@ import {Injectable, Logger} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {OnEvent} from '@nestjs/event-emitter'
 import {Interval} from '@nestjs/schedule'
+import pMap from 'p-map'
 
 @Injectable()
 export class PiecePruneService {
@@ -21,8 +22,9 @@ export class PiecePruneService {
 
   async prunePieces() {
     const deletedPieces = this.provider.findMany({deletedAt$gte: Date.now() - this.options.deletedTimeout / 1000})
-    deletedPieces.forEach((piece: Piece) => {
-      this.provider.hardDelete(piece)
+
+    await pMap(deletedPieces, async (piece: Piece) => {
+      await this.provider.hardDelete(piece)
     })
 
     const dirtyPieces = this.provider.findMany({isDirty: true, deletedAt: null})

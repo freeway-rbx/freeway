@@ -233,7 +233,7 @@ export class PieceProvider {
     return false
   }
 
-  hardDelete(piece: Piece) {
+  async hardDelete(piece: Piece) {
     const pos = this.data.indexOf(piece)
     if (pos !== -1) {
       this.data.splice(pos, 1)
@@ -260,7 +260,7 @@ export class PieceProvider {
 
   async hardDeleteWithFile(piece: Piece) {
     await this.unlinkFile(piece)
-    this.hardDelete(piece)
+    await this.hardDelete(piece)
     return piece
   }
 
