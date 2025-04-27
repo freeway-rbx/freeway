@@ -7,7 +7,15 @@ import {PieceGltfParser} from '@main/piece/gltf/piece.gltf.parser'
 import {RbxMaterial, RbxNode, RbxRoot} from '@main/piece/gltf/types'
 import {toArray} from '@main/piece/gltf/utils'
 import {PieceProvider} from '@main/piece/piece.provider'
-import {hashFromData, now, STUDIO_LINKS_DIR, writeImage, writeJson, writeString} from '@main/utils'
+import {
+  getRbxImageBitmapBase64,
+  hashFromData,
+  now,
+  STUDIO_LINKS_DIR,
+  writeImage,
+  writeJson,
+  writeString,
+} from '@main/utils'
 import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {OnEvent} from '@nestjs/event-emitter'
@@ -43,30 +51,23 @@ export class PieceGltfService implements OnModuleInit {
   }
 
   async getMesh(piece: Piece, key: string) {
-    const parser = new PieceGltfParser(piece)
-    const doc = await parser.parse()
-    const merger = new PieceGltfMerger()
-    merger.merge(piece.metadata || {} as RbxRoot, doc)
-
-    const node = toArray(doc).find(x => x.id === key) as RbxNode
+    const metadata = piece.metadata as RbxRoot
+    const node = toArray(metadata).find(x => x.id === key) as RbxNode
     if (!node) {
       return null // TODO: not found?
     }
 
-    const {mesh} = parser.getRawMesh(node)
+    const meshFileName = this.getMeshFileName(piece, node.id, node.hash)
+    // TODO what if file does not exist?
 
-    return mesh
+    return fse.readJSON(meshFileName)
   }
 
   async getMaterial(piece: Piece, materialId: string): Promise<RbxMaterial> {
-    const parser = new PieceGltfParser(piece)
+    const metadata = piece.metadata as RbxRoot
+    const materials = metadata?.materials ?? []
 
-    const doc = await parser.parse()
-
-    const merger = new PieceGltfMerger()
-    merger.merge(piece.metadata || {} as RbxRoot, doc)
-
-    const material = doc.materials.find(x => x.id === materialId) as RbxMaterial
+    const material = materials.find(x => x.id === materialId) as RbxMaterial
 
     if (!material) {
       return null // TODO: not found?
@@ -87,6 +88,22 @@ export class PieceGltfService implements OnModuleInit {
     }
 
     return channel
+  }
+
+  async getMaterialChannelRaw(piece: Piece, materialId: string, channelName: string) {
+    const material = await this.getMaterial(piece, materialId)
+
+    if (!material) {
+      return null // TODO not found
+    }
+
+    const channel = await this.getMaterialChannel(piece, materialId, channelName)
+
+    if (!channel) {
+      return null // TODO not found
+    }
+
+    return await getRbxImageBitmapBase64(this.getMaterialChannelFilePath(piece, material.id, channel.name, channel.hash))
   }
 
   async tryGenerate(piece: Piece) {
