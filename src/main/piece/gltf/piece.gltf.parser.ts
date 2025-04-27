@@ -1,9 +1,16 @@
 import {Buffer} from 'node:buffer'
 import * as GLTF from '@gltf-transform/core'
 import {Mesh} from '@gltf-transform/core'
-import {MATERIAL_MAP_DEFINITIONS} from '@main/piece/parser/constants'
-import {RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot, RbxScene} from '@main/piece/parser/types'
+import {MATERIAL_MAP_DEFINITIONS} from '@main/piece/gltf/constants'
 import {
+  RbxMaterial,
+  RbxMaterialChannelRaw,
+  RbxNode,
+  RbxRoot,
+  RbxScene,
+} from '@main/piece/gltf/types'
+import {
+  extractRbxMesh,
   hashFromData,
 } from '@main/utils'
 import {Injectable} from '@nestjs/common'
@@ -11,16 +18,19 @@ import pMap from 'p-map'
 import sharp from 'sharp'
 import {Piece} from '../piece'
 
+const concurrency = 2
+
 @Injectable()
 export class PieceGltfParser {
-  private map: Map<RbxNode, GLTF.Node> = new Map()
+  private meshMap: Map<RbxNode, {gltfNode: GLTF.Node, mesh: any}> = new Map()
+  private materialMap: Map<RbxMaterial, {gltfMaterial: GLTF.Material, channels: RbxMaterialChannelRaw[]}> = new Map()
 
   constructor(
     private readonly piece: Piece,
   ) {}
 
-  async extractMaterialChannels(material: GLTF.Material): Promise<RbxMaterialChannel[]> {
-    const channels: RbxMaterialChannel[] = []
+  async createMaterialChannels(material: GLTF.Material): Promise<RbxMaterialChannelRaw[]> {
+    const channels: RbxMaterialChannelRaw[] = []
 
     await pMap(MATERIAL_MAP_DEFINITIONS, async (def) => {
       const texture = material[def.method]()
@@ -42,31 +52,42 @@ export class PieceGltfParser {
         channels.push({
           hash,
           name: channel.name,
-          // image,
+          image,
         })
-      }, {concurrency: 1})
+      }, {concurrency})
     })
 
     return channels
   }
 
-  async createMaterial(material: GLTF.Material): Promise<RbxMaterial> {
-    return {
-      name: material.getName(),
-      channels: await this.extractMaterialChannels(material),
+  async createMaterial(gltfMaterial: GLTF.Material): Promise<RbxMaterial> {
+    const channels = await this.createMaterialChannels(gltfMaterial)
+
+    const material = {
+      name: gltfMaterial.getName(),
+      channels: channels.map((channel) => {
+        return {
+          name: channel.name,
+          hash: channel.hash,
+        }
+      }),
     }
+
+    this.materialMap.set(material, {gltfMaterial, channels})
+
+    return material
   }
 
   async createMaterials(root: GLTF.Root): Promise<RbxMaterial[]> {
     return pMap<GLTF.Material, RbxMaterial>(root.listMaterials(), async (material): Promise<RbxMaterial> => {
       return this.createMaterial(material)
-    }, {concurrency: 1})
+    }, {concurrency})
   }
 
   async createScenes(root: GLTF.Root): Promise<RbxScene[]> {
     return await pMap<GLTF.Scene, RbxScene>(root.listScenes(), async (scene, index): Promise<RbxScene> => {
       return this.createScene(scene, `scene-${index}`)
-    }, {concurrency: 1})
+    }, {concurrency})
   }
 
   async createRoot(root: GLTF.Root): Promise<RbxRoot> {
@@ -108,9 +129,9 @@ export class PieceGltfParser {
         node.materials = materials
       }
 
-      this.map.set(node, gltfNode)
-      // node._mesh = gltfMesh
-      // node._mesh = this.extractMesh(gltfNode)
+      const mesh = extractRbxMesh(gltfNode.getMesh())
+      node.hash = hashFromData(JSON.stringify(mesh))
+      this.meshMap.set(node, {gltfNode, mesh})
     }
     else {
       node.isMesh = false
@@ -153,7 +174,11 @@ export class PieceGltfParser {
     return this.createRoot(document.getRoot())
   }
 
-  getGltfNode(obj: RbxNode) {
-    return this.map.get(obj)
+  getRawMaterial(obj: RbxMaterial) {
+    return this.materialMap.get(obj)
+  }
+
+  getRawMesh(obj: RbxNode) {
+    return this.meshMap.get(obj)
   }
 }

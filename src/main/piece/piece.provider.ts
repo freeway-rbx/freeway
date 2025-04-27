@@ -2,9 +2,6 @@ import {join, parse} from 'node:path'
 import {filter as whereFilter, find as whereFind} from '@common/where'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
-import {PieceGltfMerger} from '@main/piece/parser/piece.gltf.merger'
-import {PieceGltfParser} from '@main/piece/parser/piece.gltf.parser'
-import {RbxRoot} from '@main/piece/parser/types'
 import {hashFromFile, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
@@ -184,10 +181,6 @@ export class PieceProvider {
     const hash = await hashFromFile(piece.fullPath)
     piece.isDirty = false
 
-    if (hash !== piece.hash || !piece.metadata) {
-      piece.metadata = await this.getPieceMetadata(piece)
-    }
-
     if (hash !== piece.hash) {
       piece.hash = hash
       piece.updatedAt = now()
@@ -271,19 +264,5 @@ export class PieceProvider {
         return id
       }
     }
-  }
-
-  async getPieceMetadata(piece: Piece) {
-    // TODO remove or move
-    if (piece.name.toLowerCase().endsWith('.glb')) {
-      const parser = new PieceGltfParser(piece)
-      const doc = await parser.parse()
-      const merger = new PieceGltfMerger()
-      merger.merge(piece.metadata || {} as RbxRoot, doc)
-
-      return doc
-    }
-
-    return undefined
   }
 }
