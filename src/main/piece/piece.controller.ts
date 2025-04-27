@@ -86,11 +86,14 @@ export class PieceController {
     return this.pieceGltfService.getMaterialChannel(piece, materialId, channel)
   }
 
-  @Get('/:id/metadata')
-  async getMetadata(@Param('id') id: string) {
-    // TODO: REMOVE, useless
+  @Get('/:id/material/:materialId/channel/:channel/raw')
+  async getMaterialChannelRaw(
+    @Param('id') id: string,
+    @Param('materialId') materialId: string,
+    @Param('channel') channel: string,
+  ) {
     const piece = this.pieceService.getPieceById(id)
-    return piece.metadata
+    return this.pieceGltfService.getMaterialChannelRaw(piece, materialId, channel)
   }
 
   @Get('/:id/preview')
