@@ -2,6 +2,7 @@ import {resolve} from 'node:path'
 import react from '@vitejs/plugin-react'
 import {defineConfig, externalizeDepsPlugin, swcPlugin} from 'electron-vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import 'dotenv/config'
 
 export default defineConfig({
   main: {
@@ -13,6 +14,10 @@ export default defineConfig({
       },
     },
     plugins: [externalizeDepsPlugin(), swcPlugin()],
+    define: {
+      'process.env.GA_MEASUREMENT_ID': JSON.stringify(process.env.GA_MEASUREMENT_ID),
+      'process.env.GA_API_SECRET': JSON.stringify(process.env.GA_API_SECRET),
+    },
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
