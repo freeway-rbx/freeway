@@ -27,8 +27,8 @@ export class AnalyticsService {
   }
 
   async sendEvent(eventName: string, params: Record<string, any> = {}) {
-    const measurementId = process.env.GA_MEASUREMENT_ID
-    const apiSecret = process.env.GA_API_SECRET
+    const measurementId = __GA_MEASUREMENT_ID__
+    const apiSecret = __GA_API_SECRET__
 
     if (!measurementId || !apiSecret) {
       this.logger.warn('Google Analytics not configured.')

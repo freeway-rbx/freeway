@@ -15,8 +15,8 @@ export default defineConfig({
     },
     plugins: [externalizeDepsPlugin(), swcPlugin()],
     define: {
-      'process.env.GA_MEASUREMENT_ID': JSON.stringify(process.env.GA_MEASUREMENT_ID),
-      'process.env.GA_API_SECRET': JSON.stringify(process.env.GA_API_SECRET),
+      __GA_MEASUREMENT_ID__: JSON.stringify(process.env.GA_MEASUREMENT_ID),
+      __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET),
     },
   },
   preload: {
