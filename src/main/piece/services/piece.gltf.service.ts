@@ -1,10 +1,11 @@
 import {join} from 'node:path'
 
 import {ConfigurationPiece} from '@main/_config/configuration'
+import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum} from '@main/piece/enum'
 import {PieceGltfMerger} from '@main/piece/gltf/piece.gltf.merger'
 import {PieceGltfParser} from '@main/piece/gltf/piece.gltf.parser'
-import {RbxMaterial, RbxNode, RbxRoot} from '@main/piece/gltf/types'
+import {RbxMaterial, RbxMaterialChannel, RbxNode, RbxRoot} from '@main/piece/gltf/types'
 import {toArray} from '@main/piece/gltf/utils'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {
@@ -16,9 +17,9 @@ import {
   writeJson,
   writeString,
 } from '@main/utils'
-import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
+import {Injectable, Logger, NotFoundException, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {OnEvent} from '@nestjs/event-emitter'
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter'
 import fse, {ensureDir, ensureSymlink} from 'fs-extra'
 import {Piece} from '../piece'
 
@@ -30,7 +31,7 @@ export class PieceGltfService implements OnModuleInit {
 
   constructor(
     // private readonly provider: PieceProvider,
-    // private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2,
     private readonly provider: PieceProvider,
     private readonly config: ConfigService,
   ) {
@@ -54,8 +55,14 @@ export class PieceGltfService implements OnModuleInit {
     const metadata = piece.metadata as RbxRoot
     const node = toArray(metadata).find(x => x.id === key) as RbxNode
     if (!node) {
-      return null // TODO: not found?
+      throw new NotFoundException()
     }
+
+    return node
+  }
+
+  async getMeshRaw(piece: Piece, key: string) {
+    const node = await this.getMesh(piece, key)
 
     const meshFileName = this.getMeshFileName(piece, node.id, node.hash)
     // TODO what if file does not exist?
@@ -70,7 +77,7 @@ export class PieceGltfService implements OnModuleInit {
     const material = materials.find(x => x.id === materialId) as RbxMaterial
 
     if (!material) {
-      return null // TODO: not found?
+      throw new NotFoundException()
     }
 
     return material
@@ -79,12 +86,12 @@ export class PieceGltfService implements OnModuleInit {
   async getMaterialChannel(piece: Piece, materialId: string, channelName: string) {
     const material = await this.getMaterial(piece, materialId)
     if (!material) {
-      return null // TODO: not found
+      throw new NotFoundException()
     }
     const channel = material.channels.find(x => x.name === channelName)
 
     if (!channel) {
-      return null // TODO: not found
+      throw new NotFoundException()
     }
 
     return channel
@@ -94,16 +101,58 @@ export class PieceGltfService implements OnModuleInit {
     const material = await this.getMaterial(piece, materialId)
 
     if (!material) {
-      return null // TODO not found
+      throw new NotFoundException()
     }
 
     const channel = await this.getMaterialChannel(piece, materialId, channelName)
 
     if (!channel) {
-      return null // TODO not found
+      throw new NotFoundException()
     }
 
     return await getRbxImageBitmapBase64(this.getMaterialChannelFilePath(piece, material.id, channel.name, channel.hash))
+  }
+
+  async upsertMaterialChannelUpload(piece: Piece, materialChannel: RbxMaterialChannel, dto: UpsertPieceUploadDto) {
+    if (!Array.isArray(materialChannel.uploads)) {
+      materialChannel.uploads = []
+    }
+
+    const upload = materialChannel.uploads.find(x => x.hash === dto.hash)
+    if (upload) {
+      upload.assetId = dto.assetId
+    }
+    else {
+      materialChannel.uploads.push({assetId: dto.assetId, hash: dto.hash})
+    }
+
+    // piece.updatedAt = now()
+    this.eventEmitter.emit(PieceEventEnum.updated, piece)
+
+    await this.provider.save()
+
+    return materialChannel
+  }
+
+  async upsertMeshUpload(piece: Piece, mesh: RbxNode, dto: UpsertPieceUploadDto) {
+    if (!Array.isArray(mesh.uploads)) {
+      mesh.uploads = []
+    }
+
+    const upload = mesh.uploads.find(x => x.hash === dto.hash)
+    if (upload) {
+      upload.assetId = dto.assetId
+    }
+    else {
+      mesh.uploads.push({assetId: dto.assetId, hash: dto.hash})
+    }
+
+    // piece.updatedAt = now()
+    this.eventEmitter.emit(PieceEventEnum.updated, piece)
+
+    await this.provider.save()
+
+    return mesh
   }
 
   async tryGenerate(piece: Piece) {
@@ -135,7 +184,7 @@ export class PieceGltfService implements OnModuleInit {
     const parser = new PieceGltfParser(piece)
     const metadata = await parser.parse()
     const merger = new PieceGltfMerger()
-    const oldMetadata = {} as RbxRoot // piece.metadata || {} as RbxRoot // TODO: use commented instead of actual value
+    const oldMetadata = piece.metadata || {} as RbxRoot
     const hasChanges = merger.merge(oldMetadata, metadata)
 
     if (hasChanges) {

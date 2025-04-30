@@ -1,6 +1,11 @@
 import * as GLTF from '@gltf-transform/core'
 import sharp from 'sharp'
 
+export interface Upload {
+  hash: string
+  assetId: string
+}
+
 export interface Node {
   id?: string
   name: string
@@ -28,12 +33,14 @@ export interface RbxNode extends Node {
   _mesh?: GLTF.Mesh
   isMesh?: boolean
   meshName?: string
+  uploads?: Upload[]
 }
 
 export interface RbxMaterialChannel {
   name: string
   hash: string
   updatedAt?: number
+  uploads?: Upload[]
 }
 
 export interface RbxMaterialChannelRaw extends RbxMaterialChannel {

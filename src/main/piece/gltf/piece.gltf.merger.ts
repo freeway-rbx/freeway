@@ -20,7 +20,9 @@ export class PieceGltfMerger {
 
   mergeNode(source: RbxNode, target: RbxNode) {
     if (target.isMesh) {
+      // move data from source mesh node to target mesh node
       target.id = source.id
+      target.uploads = source.uploads
 
       if (target.hash !== source.hash) {
         target.updatedAt = now()
@@ -75,6 +77,9 @@ export class PieceGltfMerger {
         changes.push({source, target: null})
         return
       }
+
+      // move data from source material channel to target material channel
+      target.uploads = source.uploads
 
       if (target.hash !== source.hash) {
         target.updatedAt = now()
