@@ -85,6 +85,20 @@ export class PieceController {
     return this.pieceGltfService.getMesh(piece, meshId)
   }
 
+  @Get('/:id/mesh/:meshId/raw')
+  async getMeshRaw(@Param('id') id: string, @Param('meshId') meshId: string) {
+    const piece = this.pieceService.getPieceById(id)
+    return this.pieceGltfService.getMeshRaw(piece, meshId)
+  }
+
+  @Post('/:id/mesh/:meshId/upload')
+  async upsertMeshUpload(@Param('id') id: string, @Param('meshId') meshId: string, @Body() dto: UpsertPieceUploadDto) {
+    const piece = this.pieceService.getPieceById(id)
+    const mesh = await this.pieceGltfService.getMesh(piece, meshId)
+    await this.pieceGltfService.upsertMeshUpload(piece, mesh, dto)
+    return mesh
+  }
+
   @Get('/:id/material/:materialId')
   async getMaterial(@Param('id') id: string, @Param('materialId') materialId: string) {
     const piece = this.pieceService.getPieceById(id)
@@ -111,6 +125,19 @@ export class PieceController {
     return this.pieceGltfService.getMaterialChannelRaw(piece, materialId, channel)
   }
 
+  @Post('/:id/material/:materialId/channel/:channel/upload')
+  async upsertMaterialChannelUpload(
+    @Param('id') id: string,
+    @Param('materialId') materialId: string,
+    @Param('channel') channelName: string,
+    @Body() dto: UpsertPieceUploadDto,
+  ) {
+    const piece = this.pieceService.getPieceById(id)
+    const channel = await this.pieceGltfService.getMaterialChannel(piece, materialId, channelName)
+    await this.pieceGltfService.upsertMaterialChannelUpload(piece, channel, dto)
+    return channel
+  }
+
   @Get('/:id/preview')
   async getPreview(@Param('id') id: string): Promise<StreamableFile> {
     const piece = this.pieceService.getPieceById(id)
@@ -135,6 +162,31 @@ export class PieceController {
 
     await this.pieceService.upsertUpload(piece, dto)
 
+    return piece
+  }
+
+  @Post('/:id/uploads/:key')
+  async upsertUploadUniversal(@Param('id') id: string, @Param('key') key: string, @Body() dto: UpsertPieceUploadDto) {
+    const piece = this.pieceService.getPieceById(id)
+
+    const [nodeId, channelName] = key.split('-')
+
+    if (nodeId && !channelName) {
+      // mesh
+      const mesh = await this.pieceGltfService.getMesh(piece, nodeId)
+      await this.pieceGltfService.upsertMeshUpload(piece, mesh, dto)
+      return mesh
+    }
+
+    if (nodeId && channelName) {
+      // material channel
+      const channel = await this.pieceGltfService.getMaterialChannel(piece, nodeId, channelName)
+      await this.pieceGltfService.upsertMaterialChannelUpload(piece, channel, dto)
+      return channel
+    }
+
+    // piece
+    await this.pieceService.upsertUpload(piece, dto)
     return piece
   }
 
