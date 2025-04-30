@@ -21,7 +21,7 @@ function Pieces() {
   const [loading, setLoading] = useState(true)
 
   function onReveal() {
-    window.electron.reveal()
+    window.electron.reveal('', true)
   }
 
   const {query} = useSearch()
