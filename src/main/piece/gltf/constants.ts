@@ -2,7 +2,7 @@ export const MATERIAL_MAP_DEFINITIONS = [
   {
     method: 'getBaseColorTexture',
     channels: [
-      {name: 'b', extractChannel: null},
+      {name: 'c', extractChannel: null},
     ],
   },
   {
