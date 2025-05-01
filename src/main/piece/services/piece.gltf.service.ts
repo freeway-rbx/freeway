@@ -126,7 +126,7 @@ export class PieceGltfService implements OnModuleInit {
       materialChannel.uploads.push({assetId: dto.assetId, hash: dto.hash})
     }
 
-    // piece.updatedAt = now()
+    piece.updatedAt = now()
     this.eventEmitter.emit(PieceEventEnum.updated, piece)
 
     await this.provider.save()
@@ -147,7 +147,7 @@ export class PieceGltfService implements OnModuleInit {
       mesh.uploads.push({assetId: dto.assetId, hash: dto.hash})
     }
 
-    // piece.updatedAt = now()
+    piece.updatedAt = now()
     this.eventEmitter.emit(PieceEventEnum.updated, piece)
 
     await this.provider.save()
