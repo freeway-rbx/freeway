@@ -68,7 +68,7 @@ export interface RbxMeshFace {
 }
 
 export interface RbxMesh {
-  name: string
+  name?: string
   v: number [][]
   uv: number [][]
   vn: number [][]
@@ -127,6 +127,12 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
     vn,
     faces,
   }
+}
+
+export function extractRbxMesh2(gltfMesh: GLTF.Mesh, transform: mat4 = null) {
+  const mesh = extractRbxMesh(gltfMesh, transform)
+  const translation = translateVertices(mesh)
+  return {mesh, translation}
 }
 
 export function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
@@ -257,7 +263,7 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
   else {
     return null
   }
-  result = translateVertices(result)
+  translateVertices(result)
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
 }
@@ -283,10 +289,11 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
   return [[xMin, xMax], [yMin, yMax], [zMin, zMax]]
 }
 
-function translateVertices(mesh: RbxMesh): RbxMesh {
+function translateVertices(mesh: RbxMesh): [number, number, number] {
   // bounding box
   if (mesh.v.length === 0)
-    return mesh
+    return [0, 0, 0]
+
   const box = calcBoundingBox(mesh)
   // axisTranslate = 0 - min + (max-min)/2
   const xTr = 0 - (box[0][0] + (box[0][1] - box[0][0]) / 2)
@@ -298,7 +305,8 @@ function translateVertices(mesh: RbxMesh): RbxMesh {
     v3[1] = v3[1] + yTr
     v3[2] = v3[2] + zTr
   })
-  return mesh
+
+  return [-xTr, -yTr, -zTr]
 }
 
 export function fromRbxImage(rbxImage: RbxBase64Image) {

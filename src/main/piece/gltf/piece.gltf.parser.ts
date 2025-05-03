@@ -10,7 +10,7 @@ import {
   RbxScene,
 } from '@main/piece/gltf/types'
 import {
-  extractRbxMesh,
+  extractRbxMesh2,
   hashFromData,
 } from '@main/utils'
 import {Injectable} from '@nestjs/common'
@@ -129,7 +129,7 @@ export class PieceGltfParser {
         node.materials = materials
       }
 
-      const mesh = extractRbxMesh(gltfNode.getMesh(), gltfNode.getWorldMatrix())
+      const mesh = extractRbxMesh2(gltfNode.getMesh(), gltfNode.getWorldMatrix())
       node.hash = hashFromData(JSON.stringify(mesh))
       this.meshMap.set(node, {gltfNode, mesh})
     }
