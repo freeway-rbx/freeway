@@ -129,7 +129,7 @@ export class PieceGltfParser {
         node.materials = materials
       }
 
-      const mesh = extractRbxMesh(gltfNode.getMesh())
+      const mesh = extractRbxMesh(gltfNode.getMesh(), gltfNode.getWorldMatrix())
       node.hash = hashFromData(JSON.stringify(mesh))
       this.meshMap.set(node, {gltfNode, mesh})
     }

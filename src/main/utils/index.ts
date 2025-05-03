@@ -221,22 +221,22 @@ async function parseGLTFFile(filePath: string): Promise<RbxMesh> {
   const result = []
 
   scene.traverse((node: GLTF.Node) => {
-    if (node.getMesh() != null) {
-      const gltfMesh = node.getMesh()
+    const gltfMesh = node.getMesh()
 
-      if (!gltfMesh) {
-        return
-      }
-
-      const transform = node.getWorldMatrix()
-      const myMesh = extractRbxMesh(gltfMesh, transform)
-      result.push({
-        name: node.getName(),
-        transform,
-        ...myMesh,
-      })
+    if (!gltfMesh) {
+      return
     }
+
+    // https://habr.com/ru/articles/432544/
+    const transform = node.getWorldMatrix()
+    const myMesh = extractRbxMesh(gltfMesh, transform)
+    result.push({
+      name: node.getName(),
+      transform,
+      ...myMesh,
+    })
   })
+
   return {
     name: result[0].name,
     v: result[0].v,
