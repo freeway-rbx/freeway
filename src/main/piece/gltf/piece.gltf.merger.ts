@@ -41,7 +41,7 @@ export class PieceGltfMerger {
     const deletedSourceNodes = []
 
     this.sourceNodes.forEach((source) => {
-      const target = find(this.targetNodes, {name: source.name})
+      const target = find(this.targetNodes, {name: source.name, id$undefined: true})
 
       if (target) {
         const hasChanges = this.mergeNode(source, target)
