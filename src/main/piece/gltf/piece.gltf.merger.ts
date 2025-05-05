@@ -128,11 +128,11 @@ export class PieceGltfMerger {
 
   private _generateUniqId(arr: any[], length: number = 3) {
     const max = arr.reduce((acc, val) => {
-      const id = val.id || 0
+      const id = Number.parseInt(val.id || '0', 36) || 0
       return acc > id ? acc : id
     }, 0)
 
-    return (Number.parseInt(max, 36) + 1).toString(36).padStart(length, '0')
+    return (max + 1).toString(36).padStart(length, '0').toUpperCase()
     // for (let i = 0; /* to the moon */; i++) {
     //   const id = randomString(Math.floor(i / 10 + length))
     //
