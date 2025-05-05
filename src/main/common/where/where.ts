@@ -51,6 +51,14 @@ function expr_null(a: any, b: boolean) {
   return (a === null) === b
 }
 
+function expr_undefined(a: any, b: boolean) {
+  return (a === undefined) === b
+}
+
+function expr_fn(a: any, b: boolean) {
+  return (typeof a === 'function') === b
+}
+
 function expr_odd(a: number, b: boolean) {
   return (a % 2 === 1) === b
 }
@@ -106,6 +114,8 @@ const EXPR_MAP = {
   truthy: expr_truthy,
   falsy: expr_falsy,
   null: expr_null,
+  undefined: expr_undefined,
+  fn: expr_fn,
   odd: expr_odd,
   even: expr_even,
 
