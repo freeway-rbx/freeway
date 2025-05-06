@@ -1,15 +1,17 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 import {Injectable, Logger} from '@nestjs/common'
-import {app} from 'electron'
 import fetch from 'node-fetch'
+import {app} from 'electron'
+import * as path from 'path'
+import * as fs from 'fs'
+import {ConfigService} from '@nestjs/config'
 
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name)
   private clientId: string
 
-  constructor() {
+
+  constructor(private config: ConfigService) {
     this.initClientId()
   }
 
@@ -17,12 +19,11 @@ export class AnalyticsService {
     const filePath = path.join(app.getPath('userData'), 'ga-client.json')
     if (fs.existsSync(filePath)) {
       this.clientId = JSON.parse(fs.readFileSync(filePath, 'utf-8')).client_id
-    }
-    else {
+    } else {
       const randomPart = Math.floor(Math.random() * 1e10)
       const timestampPart = Math.floor(Date.now() / 1000)
       this.clientId = `${randomPart}.${timestampPart}`
-      fs.writeFileSync(filePath, JSON.stringify({client_id: this.clientId}))
+      fs.writeFileSync(filePath, JSON.stringify({ client_id: this.clientId }))
     }
   }
 
@@ -53,14 +54,13 @@ export class AnalyticsService {
         },
       )
 
-      this.logger.log(`GA Event Sent: ${eventName}`, JSON.stringify({client_id: this.clientId, eventName, params}))
+      this.logger.log(`GA Event Sent: ${eventName}`, JSON.stringify({ client_id: this.clientId, eventName, params }))
       this.logger.log(`Response: ${res.status} - ${await res.text()}`)
 
       if (!res.ok) {
         this.logger.warn(`GA failed: ${res.status} - ${await res.text()}`)
       }
-    }
-    catch (err) {
+    } catch (err) {
       this.logger.error('GA send error', err)
     }
   }
