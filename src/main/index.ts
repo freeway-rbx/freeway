@@ -4,13 +4,19 @@ import {ElectronIpcTransport} from '@doubleshot/nest-electron'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
-import {app as electronApp} from 'electron'
+import * as Sentry from '@sentry/electron/main'
+import {app as electronApp, ipcMain} from 'electron'
 import {json, urlencoded} from 'express'
 import {WINSTON_MODULE_NEST_PROVIDER} from 'nest-winston'
 import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
+import {AnalyticsService} from './analytics/analytics.service'
 import {AppModule} from './app.module'
-import {AnalyticsService} from "./analytics/analytics.service"
-import {ipcMain} from 'electron'
+
+Sentry.init({
+  dsn: __VITE_SENTRY_DSN__,
+  tracesSampleRate: 1.0,
+  attachStacktrace: true,
+})
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -27,7 +33,6 @@ async function bootstrap() {
     const config = nestApp.get(ConfigService)
 
     nestApp.enableCors(config.get<ConfigurationCors>('cors'))
-
     nestApp.useGlobalPipes(
       new ValidationPipe({
         transform: true,

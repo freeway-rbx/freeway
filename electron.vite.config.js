@@ -17,6 +17,7 @@ export default defineConfig({
     define: {
       __GA_MEASUREMENT_ID__: JSON.stringify(process.env.GA_MEASUREMENT_ID),
       __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET),
+      __VITE_SENTRY_DSN__: JSON.stringify(process.env.VITE_SENTRY_DSN),
     },
   },
   preload: {
