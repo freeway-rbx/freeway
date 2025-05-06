@@ -4,9 +4,9 @@ import {Toaster} from '@/components/ui/toaster'
 // import {useRoutePaths, useSession} from "@render/hooks";
 import {emitCustomEvent} from 'react-custom-events'
 import {HashRouter} from 'react-router-dom'
+import {SearchProvider} from './contexts/SearchContext/SearchContext'
 import {AuthProvider} from './providers'
 import {Router} from './router'
-import {SearchProvider} from './contexts/SearchContext/SearchContext'
 
 function App() {
   window.electron.onIpcMessage((message) => {
