@@ -10,6 +10,7 @@ export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name)
   private clientId: string
 
+
   constructor(private config: ConfigService) {
     this.initClientId()
   }
@@ -27,8 +28,8 @@ export class AnalyticsService {
   }
 
   async sendEvent(eventName: string, params: Record<string, any> = {}) {
-    const measurementId = this.config.get<string>('GA_MEASUREMENT_ID')
-    const apiSecret = this.config.get<string>('GA_API_SECRET')
+    const measurementId = __GA_MEASUREMENT_ID__
+    const apiSecret = __GA_API_SECRET__
 
     if (!measurementId || !apiSecret) {
       this.logger.warn('Google Analytics not configured.')
@@ -40,7 +41,7 @@ export class AnalyticsService {
         `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             client_id: this.clientId,
             events: [
@@ -50,7 +51,7 @@ export class AnalyticsService {
               },
             ],
           }),
-        }
+        },
       )
 
       this.logger.log(`GA Event Sent: ${eventName}`, JSON.stringify({ client_id: this.clientId, eventName, params }))
