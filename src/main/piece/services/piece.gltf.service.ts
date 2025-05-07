@@ -20,7 +20,7 @@ import {
 import {Injectable, Logger, NotFoundException, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter'
-import fse, {ensureDir, ensureSymlink} from 'fs-extra'
+import fse from 'fs-extra'
 import {Piece} from '../piece'
 
 @Injectable()
@@ -39,8 +39,15 @@ export class PieceGltfService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    await ensureDir(this.options.gltfDirectory)
-    await ensureSymlink(this.options.gltfDirectory, join(STUDIO_LINKS_DIR, 'gltf'), 'junction')
+    await fse.ensureDir(this.options.gltfDirectory)
+    try {
+      await fse.ensureSymlink(this.options.gltfDirectory, join(STUDIO_LINKS_DIR, 'gltf'), 'junction')
+    }
+    catch (err: any) {
+      this.logger.error('Unable to make gltf directory symlink', err.message)
+      await fse.unlink(join(STUDIO_LINKS_DIR, 'gltf'))
+      await fse.ensureSymlink(this.options.gltfDirectory, join(STUDIO_LINKS_DIR, 'gltf'), 'junction')
+    }
   }
 
   async getUpdatedDoc(piece: Piece) {
