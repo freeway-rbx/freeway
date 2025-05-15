@@ -66,6 +66,7 @@
     "jimp": "^1.6.0",
     "jwt-decode": "^4.0.0",
     "keytar": "^7.9.0",
+    "meshoptimizer": "^0.23.0",
     "micromatch": "^4.0.8",
     "mime-types": "^2.1.35",
     "nest-winston": "^1.10.2",
