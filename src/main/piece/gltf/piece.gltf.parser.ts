@@ -2,6 +2,8 @@ import {Buffer} from 'node:buffer'
 import * as GLTF from '@gltf-transform/core'
 import {Mesh} from '@gltf-transform/core'
 import {MATERIAL_MAP_DEFINITIONS} from '@main/piece/gltf/constants'
+import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions'
+
 import {
   RbxMaterial,
   RbxMaterialChannelRaw,
@@ -168,7 +170,8 @@ export class PieceGltfParser {
   }
 
   async parse() {
-    const io = new GLTF.NodeIO()
+    const io = new GLTF.NodeIO().registerExtensions(KHRONOS_EXTENSIONS)
+
     const document = await io.read(this.piece.fullPath)
 
     return this.createRoot(document.getRoot())
