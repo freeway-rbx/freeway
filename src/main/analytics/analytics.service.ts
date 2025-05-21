@@ -18,7 +18,8 @@ export class AnalyticsService {
     const filePath = path.join(app.getPath('userData'), 'ga-client.json')
     if (fs.existsSync(filePath)) {
       this.clientId = JSON.parse(fs.readFileSync(filePath, 'utf-8')).client_id
-    } else {
+    }
+    else {
       const randomPart = Math.floor(Math.random() * 1e10)
       const timestampPart = Math.floor(Date.now() / 1000)
       this.clientId = `${randomPart}.${timestampPart}`

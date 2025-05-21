@@ -43,6 +43,11 @@ export class Piece {
     return `${this.dir}/${this.name}`
   }
 
+  public get extractExtension(): string {
+    const parts = this.name.split('.')
+    return parts.length > 1 ? parts.pop()! : ''
+  }
+
   constructor() {
     if (!this.updatedAt) {
       this.updatedAt = now()

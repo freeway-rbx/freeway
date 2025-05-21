@@ -190,7 +190,7 @@ export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicatio
   async updateFromFile(piece: Piece) {
     const oldHash = piece.hash
     await this.provider.updateFromFile(piece)
-    if (oldHash !== piece.hash || true) { // TODO: remove `true` // just for testing
+    if (oldHash !== piece.hash || true) {
       this.eventEmitter.emit(PieceEventEnum.changed, piece)
     }
   }
