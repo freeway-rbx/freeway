@@ -1,5 +1,5 @@
 // This should always be first!
-import './instument'
+import './sentry'
 
 import type {MicroserviceOptions} from '@nestjs/microservices'
 import process from 'node:process'
