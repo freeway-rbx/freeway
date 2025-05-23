@@ -13,7 +13,7 @@ export class PieceIpcService {
     const win = this.electron.getMainWindow()
     if (win) {
       win.webContents.send('ipc-message', {name, data})
-      this.analytics.sendEvent(name, {type: data.type, extension: data.extractExtension})
+      this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension})
     }
   }
 
