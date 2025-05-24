@@ -1,3 +1,4 @@
+import {AnalyticsService} from '@main/analytics/analytics.service'
 import {ElectronService} from '@main/electron/electron.service'
 import {PieceEventEnum} from '@main/piece/enum'
 import {Piece} from '@main/piece/piece'
@@ -6,12 +7,13 @@ import {OnEvent} from '@nestjs/event-emitter'
 
 @Injectable()
 export class PieceIpcService {
-  constructor(private readonly electron: ElectronService) {}
+  constructor(private readonly electron: ElectronService, private readonly analytics: AnalyticsService) {}
 
-  _sendIpcMessageEvent(name: string, data: any) {
+  _sendIpcMessageEvent(name: string, data: Piece) {
     const win = this.electron.getMainWindow()
     if (win) {
       win.webContents.send('ipc-message', {name, data})
+      this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension})
     }
   }
 

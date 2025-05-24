@@ -2,7 +2,6 @@ import {Button} from '@/components/ui/button'
 import {EmptyState} from '@/components/ui/empty-state'
 import {useSearch} from '@/contexts/SearchContext/SearchContext'
 import {useDebouncedValue} from '@/hooks/useDebouncedValue'
-import {AnalyticsEvent, sendAnalyticsEvent} from '@/utils'
 import {Box, Group, Stack} from '@chakra-ui/react'
 import Fuse from 'fuse.js'
 import {useEffect, useState} from 'react'
@@ -56,7 +55,6 @@ function Pieces() {
     const json = await res.json()
     setList(json || [])
     setLoading(false)
-    sendAnalyticsEvent(AnalyticsEvent.LoadedPieces, {pieces_size: json.length})
   }
 
   useCustomEventListener<any>('piece.created', () => {

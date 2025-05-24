@@ -51,6 +51,7 @@
     "@parcel/watcher": "2.4.1",
     "@roblox-integrations/roblox-install": "0.0.10",
     "@sentry/electron": "^6.5.0",
+    "@sentry/nestjs": "^9.22.0",
     "axios": "^1.7.7",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
