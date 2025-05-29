@@ -29,43 +29,44 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: build-linux
-        if: matrix.os == 'ubuntu-latest'
-        run: npm run build:linux
+      - name: Setup .env file
+        run: |
+          echo "GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY }}" > .env
+          echo "GA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID }}" >> .env 
+          echo "VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}" >> .env          
 
       - name: build-mac
         if: matrix.os == 'macos-latest'
         run: |
-          vars="GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}\nGA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID}}"
-          echo "$vars">.env 
-
           echo "$APPLE_API_KEY_CONTENT" > key.p8  
           npm run build:mac
         env:
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER}}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID}}
-          APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY}}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY: key.p8
           CSC_LINK: file://${{ github.workspace }}/mac/Certificates.p12
           CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
 
-      - name: build-mac-cleanup
+      - name: cleanup-mac
         if: always() && matrix.os == 'macos-latest'
         run: |
           rm -f key.p8
-          rm -f .env
+
       - name: build-win
         if: matrix.os == 'windows-latest'
         run: |
-          echo %ANALYTICS_ENV_CONTENT% > .env
           npm run build:win
-        
-
         env:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ANALYTICS_ENV_CONTENT: "GA_API_SECRET=${{ secrets.GA_ANALYTICS_KEY}}◙GA_MEASUREMENT_ID=${{ secrets.GA_MEASUREMENT_ID}}" 
+
+      - name: cleanup-all
+        if: always()
+        run: |
+          rm .env
+
       - name: release
         uses: softprops/action-gh-release@v1
         with:

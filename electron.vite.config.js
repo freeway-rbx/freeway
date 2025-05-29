@@ -4,6 +4,10 @@ import {defineConfig, externalizeDepsPlugin, swcPlugin} from 'electron-vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import 'dotenv/config'
 
+
+console.log('GA_MEASUREMENT_ID:', process.env.GA_MEASUREMENT_ID)
+
+
 export default defineConfig({
   main: {
     resolve: {
