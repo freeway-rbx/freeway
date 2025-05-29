@@ -55,7 +55,6 @@ export class AnalyticsService {
       )
 
       this.logger.log(`GA Event Sent: ${eventName}`, JSON.stringify({client_id: this.clientId, eventName, params}))
-      this.logger.log(`Response: ${res.status} - ${await res.text()}`)
 
       if (!res.ok) {
         this.logger.warn(`GA failed: ${res.status} - ${await res.text()}`)
