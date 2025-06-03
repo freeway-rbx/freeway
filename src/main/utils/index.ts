@@ -167,9 +167,6 @@ export function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
       for (let i = 0; i < normalAccessor.getCount(); i++) {
         const normal = vec3.create()
         normalAccessor.getElement(i, normal as Array<number>)
-        if (transform) {
-          vec3.transformMat4(normal, normal, transform)
-        }
         normals.push(Array.from(normal))
       }
     }
