@@ -23,6 +23,7 @@ import {Box, Button, Flex, Heading, Link, Show, Stack, Text} from '@chakra-ui/re
 
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
+import {Prose} from "@/components/ui/prose";
 
 let isDialogWasOpened = false
 
@@ -130,7 +131,7 @@ export default function NavbarUpdateAvailable() {
               <Show when={updateInfo.releaseNotes}>
                 <Box>
                   <Heading size="sm">What's new:</Heading>
-                  <Box dangerouslySetInnerHTML={{__html: updateInfo.releaseNotes}}></Box>
+                  <Prose dangerouslySetInnerHTML={{__html: updateInfo.releaseNotes}}></Prose>
                 </Box>
               </Show>
             </Stack>
