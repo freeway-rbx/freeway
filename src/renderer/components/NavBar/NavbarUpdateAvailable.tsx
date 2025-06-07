@@ -19,11 +19,11 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {Box, Button, Flex, Heading, Link, Show, Stack, Text} from '@chakra-ui/react'
+import {Prose} from '@/components/ui/prose'
 
+import {Box, Button, Flex, Heading, Link, Show, Stack, Text} from '@chakra-ui/react'
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
-import {Prose} from "@/components/ui/prose";
 
 let isDialogWasOpened = false
 
