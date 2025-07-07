@@ -131,7 +131,7 @@ async function parseOBJFile(filePath: string): Promise<RbxMesh> {
 
 export function extractRbxMesh2(gltfMesh: GLTF.Mesh, transform: mat4 = null) {
   const mesh = extractRbxMesh(gltfMesh, transform)
-  return {mesh, translation: [transform[12], transform[13], transform[14]]} // TODO MI: remove translation
+  return {mesh, translation: [transform[12], transform[13], transform[14]]}
 }
 
 export function extractRbxMesh(mesh: GLTF.Mesh, transform: mat4 = null) {
