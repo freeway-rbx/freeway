@@ -1,7 +1,6 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import {Injectable, Logger} from '@nestjs/common'
-import {ConfigService} from '@nestjs/config'
 import {app} from 'electron'
 import fetch from 'node-fetch'
 
@@ -9,9 +8,11 @@ import fetch from 'node-fetch'
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name)
   private clientId: string
+  private geolocationData: Record<string, any> = {}
 
-  constructor(private config: ConfigService) {
+  constructor() {
     this.initClientId()
+    this.initGeolocation()
   }
 
   private initClientId() {
@@ -27,6 +28,17 @@ export class AnalyticsService {
     }
   }
 
+  private async initGeolocation() {
+    try {
+      const res = await fetch('https://ipapi.co/json/')
+      this.geolocationData = await res.json()
+      this.logger.log(`Geolocation fetched: ${JSON.stringify(this.geolocationData)}`)
+    }
+    catch (error) {
+      this.logger.warn('Failed to fetch geolocation:', error)
+    }
+  }
+
   async sendEvent(eventName: string, params: Record<string, any> = {}) {
     const measurementId = __GA_MEASUREMENT_ID__
     const apiSecret = __GA_API_SECRET__
@@ -34,6 +46,11 @@ export class AnalyticsService {
     if (!measurementId || !apiSecret) {
       this.logger.warn('Google Analytics not configured.')
       return
+    }
+
+    const finalParams = {
+      ...params,
+      ...this.extractGeolocationFields(),
     }
 
     try {
@@ -47,7 +64,7 @@ export class AnalyticsService {
             events: [
               {
                 name: eventName,
-                params,
+                params: finalParams,
               },
             ],
           }),
@@ -63,5 +80,10 @@ export class AnalyticsService {
     catch (err) {
       this.logger.error('GA send error', err)
     }
+  }
+
+  private extractGeolocationFields() {
+    const {city, country} = this.geolocationData
+    return {city, country}
   }
 }
