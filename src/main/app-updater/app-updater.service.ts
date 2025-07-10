@@ -1,9 +1,17 @@
+import {join} from 'node:path'
 import {setTimeout as delay} from 'node:timers/promises'
 import {ElectronService} from '@main/electron/electron.service'
 import {Injectable, OnModuleInit} from '@nestjs/common'
 import {Interval, Timeout} from '@nestjs/schedule'
-import electronUpdater, {AppUpdater, UpdateInfo} from 'electron-updater'
+import {app as electronApp, Notification} from 'electron'
+import electronUpdater, {AppUpdater, UpdateCheckResult, UpdateInfo} from 'electron-updater'
 import {AppUpdaterLogger} from './app-updater-logger'
+
+export interface DownloadNotification {
+  body: string
+  title: string
+  icon: string
+}
 
 @Injectable()
 export class AppUpdaterService implements OnModuleInit {
@@ -97,6 +105,39 @@ export class AppUpdaterService implements OnModuleInit {
     //   return
     // }
     //
+
     await this.autoUpdater.checkForUpdatesAndNotify()
+    // await this.checkForUpdatesAndNotify()
+  }
+
+  checkForUpdatesAndNotify(downloadNotification?: DownloadNotification): Promise<UpdateCheckResult | null> {
+    return this.autoUpdater.checkForUpdates().then((it) => {
+      if (!it?.downloadPromise) {
+        return it
+      }
+
+      void it.downloadPromise.then(() => {
+        const notificationContent = AppUpdaterService.formatDownloadNotification(it.updateInfo.version, electronApp.name, downloadNotification)
+        new Notification(notificationContent).show()
+      })
+
+      return it
+    })
+  }
+
+  private static formatDownloadNotification(version: string, appName: string, downloadNotification?: DownloadNotification): DownloadNotification & {icon: string} {
+    if (downloadNotification == null) {
+      downloadNotification = {
+        title: 'A new update is ready to install',
+        body: `{appName} version {version} has been downloaded and will be automatically installed on exit`,
+        icon: join(__dirname, '../../resources/icon.png'),
+      }
+    }
+    downloadNotification = {
+      title: downloadNotification.title.replace('{appName}', appName).replace('{version}', version),
+      body: downloadNotification.body.replace('{appName}', appName).replace('{version}', version),
+      icon: join(__dirname, '../../resources/icon.png'),
+    }
+    return downloadNotification
   }
 }

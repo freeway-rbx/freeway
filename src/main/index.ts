@@ -1,9 +1,10 @@
-// This should always be first!
-import './sentry'
+/* eslint-disable perfectionist/sort-imports */
+import './sentry' // This should always be first!
 
 import type {MicroserviceOptions} from '@nestjs/microservices'
 import process from 'node:process'
 import {ElectronIpcTransport} from '@doubleshot/nest-electron'
+import {platform} from '@electron-toolkit/utils'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
@@ -62,14 +63,20 @@ async function bootstrap() {
 
     const isDev = !electronApp.isPackaged
     electronApp.on('window-all-closed', async () => {
-      if (process.platform !== 'darwin') {
+      if (!platform.isMacOS) {
         await nestApp.close()
         electronApp.quit()
       }
     })
 
+    if (platform.isWindows) {
+      // @see https://stackoverflow.com/questions/65859634/notification-from-electron-shows-electron-app-electron
+      const capitalizedAppName = String(electronApp.name).charAt(0).toUpperCase() + String(electronApp.name).slice(1)
+      electronApp.setAppUserModelId(capitalizedAppName)
+    }
+
     if (isDev) {
-      if (process.platform === 'win32') {
+      if (platform.isWindows) {
         process.on('message', async (data) => {
           if (data === 'graceful-exit') {
             await nestApp.close()
