@@ -11,7 +11,7 @@ export class PieceIpcService {
 
   _sendIpcMessageEvent(name: string, data: Piece) {
     this.electron.getMainWindow()?.webContents.send('ipc-message', {name, data})
-    this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension})
+    this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension}) // TODO: move into AnalyticsService
   }
 
   @OnEvent(PieceEventEnum.initiated)
