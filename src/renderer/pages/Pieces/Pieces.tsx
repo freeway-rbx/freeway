@@ -57,6 +57,7 @@ function Pieces() {
     setLoading(false)
   }
 
+  // TODO cuhuak: use enum PieceEventEnum, not string literals
   useCustomEventListener<any>('piece.created', () => {
     getApiPieces()
   })
@@ -67,6 +68,9 @@ function Pieces() {
     getApiPieces()
   })
   useCustomEventListener<any>('piece.changed', () => {
+    getApiPieces()
+  })
+  useCustomEventListener<any>('piece.watcher.ready', () => {
     getApiPieces()
   })
 

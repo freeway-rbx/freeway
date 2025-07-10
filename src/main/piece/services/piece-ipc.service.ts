@@ -14,6 +14,11 @@ export class PieceIpcService {
     this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension}) // TODO: move into AnalyticsService
   }
 
+  @OnEvent(PieceEventEnum.watcherReady)
+  async handleWatcherReady() {
+    this.electron.getMainWindow()?.webContents.send('ipc-message', {name: PieceEventEnum.watcherReady})
+  }
+
   @OnEvent(PieceEventEnum.initiated)
   async handlePieceInitiated(piece: Piece) {
     this._sendIpcMessageEvent(PieceEventEnum.initiated, piece)
