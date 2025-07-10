@@ -10,11 +10,8 @@ export class PieceIpcService {
   constructor(private readonly electron: ElectronService, private readonly analytics: AnalyticsService) {}
 
   _sendIpcMessageEvent(name: string, data: Piece) {
-    const win = this.electron.getMainWindow()
-    if (win) {
-      win.webContents.send('ipc-message', {name, data})
-      this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension})
-    }
+    this.electron.getMainWindow()?.webContents.send('ipc-message', {name, data})
+    this.analytics.sendEvent(name.replace(/\./g, '_'), {type: data.type, extension: data.extractExtension})
   }
 
   @OnEvent(PieceEventEnum.initiated)
