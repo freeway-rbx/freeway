@@ -15,7 +15,9 @@ bl_info = {
 
 import bpy
 import os
-
+from pathlib import Path
+freeway_path = os.path.join(Path.home(), "freeway", "files")
+print(freeway_path)
 
 def ShowMessageBox(title = "Message Box", message = "",  icon = 'INFO'):
 
@@ -38,8 +40,6 @@ def export_as_gltf(path):
 
 
 
-# TODO MI Fetch this path dynamically for Windows and Mac
-freeway_path = "/Users/mignatyev/freeway/files"
 
 
 class FreewaySaveOperator(bpy.types.Operator):
