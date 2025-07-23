@@ -16,6 +16,7 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file'
 
         if (conf.isConsoleTransportEnabled) {
           transports.push(new winston.transports.Console({
+            level: 'debug',
             format: winston.format.combine(
               winston.format.timestamp(),
               winston.format.ms(),
