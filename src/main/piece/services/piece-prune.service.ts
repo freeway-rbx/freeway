@@ -21,7 +21,8 @@ export class PiecePruneService {
   }
 
   async prunePieces() {
-    const deletedPieces = this.provider.findMany({deletedAt$gte: Date.now() - this.options.deletedTimeout / 1000})
+    const past = (Date.now() - this.options.deletedTimeout) / 1000
+    const deletedPieces = this.provider.findMany({deletedAt$null: false, deletedAt$lte: past})
 
     await pMap(deletedPieces, async (piece: Piece) => {
       await this.provider.hardDelete(piece)
