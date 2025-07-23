@@ -26,8 +26,8 @@ export class AppUpdaterService implements OnModuleInit {
     this.autoUpdater.autoDownload = true
     this.autoUpdater.autoRunAppAfterInstall = true
 
-    // needed for test mostly, if disable then
-    // will be "Skip checkForUpdates because application is not packed and dev update config is not forced"
+    // `forceDevUpdateConfig = true` is needed for test mostly, if disable then
+    // you will see "Skip checkForUpdates because application is not packed and dev update config is not forced"
     this.autoUpdater.forceDevUpdateConfig = true
 
     this.autoUpdater.setFeedURL({
@@ -42,21 +42,29 @@ export class AppUpdaterService implements OnModuleInit {
 
       this.updateInfo = updateInfo
 
-      this.electronService.getMainWindow()?.webContents.send('ipc-message', {
-        name: 'app-updater:update-available',
-        data: updateInfo,
-      })
-
-      this.isUpdateDownloaded = false // need?
+      this.isUpdateDownloaded = false
     })
 
     this.autoUpdater.on('download-progress', (info) => {
-      this.logger.log(`---- UPDATE PROGRESS ---- ${info.percent}`)
+      this.logger.debug(`---- UPDATE DOWNLOAD PROGRESS ---- ${info.percent}`)
     })
 
     this.autoUpdater.on('update-downloaded', () => {
-      this.logger.log(`---- UPDATE DOWNLOADED ---- `)
+      this.logger.debug(`---- UPDATE DOWNLOADED ---- `)
       this.isUpdateDownloaded = true
+
+      this.sendIpcEvent()
+    })
+  }
+
+  sendIpcEvent() {
+    if (!this.isUpdateAvailable) {
+      return
+    }
+
+    this.electronService.getMainWindow()?.webContents.send('ipc-message', {
+      name: 'app-updater:update-available',
+      data: this.updateInfo,
     })
   }
 
@@ -65,7 +73,7 @@ export class AppUpdaterService implements OnModuleInit {
     this.autoUpdater.quitAndInstall()
   }
 
-  @Timeout(1_000)
+  @Timeout(10_000)
   protected async timeoutCheckForUpdate(): Promise<void> {
     await this.checkForUpdate()
   }
@@ -87,6 +95,7 @@ export class AppUpdaterService implements OnModuleInit {
   protected async intervalFlashFrameCheckForUpdate(): Promise<void> {
     if (this.isUpdateAvailable) {
       this.electronService.getMainWindow()?.flashFrame(true)
+      this.sendIpcEvent()
       await delay(10_000)
       this.electronService.getMainWindow()?.flashFrame(false)
     }
