@@ -1,6 +1,6 @@
 import {join, parse} from 'node:path'
 import {filter as whereFilter, find as whereFind} from '@common/where'
-import {ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationPiece} from '@main/_config'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {hashFromFile, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'

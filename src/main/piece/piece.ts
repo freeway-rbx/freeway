@@ -48,6 +48,10 @@ export class Piece {
     return parts.length > 1 ? parts.pop()! : ''
   }
 
+  public get isGltf(): boolean {
+    return this.name.endsWith('.glb')
+  }
+
   constructor() {
     if (!this.updatedAt) {
       this.updatedAt = now()

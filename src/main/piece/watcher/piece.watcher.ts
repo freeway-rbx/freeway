@@ -1,8 +1,10 @@
 import fs from 'node:fs/promises'
 import {join} from 'node:path'
-import {ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationPiece} from '@main/_config'
 import {PieceExtTypeMap} from '@main/piece/enum'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
+import {PieceGltfProcessor} from '@main/piece/gltf/piece.gltf.processor'
+import {getMaterialChannelFileName, getNodeFileName} from '@main/piece/gltf/utils'
 import {Piece} from '@main/piece/piece'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
@@ -192,6 +194,39 @@ export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicatio
     await this.provider.updateFromFile(piece)
     if (oldHash !== piece.hash) {
       this.eventEmitter.emit(PieceEventEnum.changed, piece)
+    }
+    else {
+      // TODO ES: Refactor this
+      if (piece.isGltf) {
+        let hasChanges = false
+        const processor = new PieceGltfProcessor(piece)
+        const files = await processor.globExistingFiles()
+        await processor.forEachNode(piece.metadata, (node) => {
+          if (!node.isMesh)
+            return
+
+          const file = getNodeFileName(node.id, node.hash)
+
+          if (!files.includes(file))
+            hasChanges = true
+        })
+
+        if (hasChanges) {
+          await processor.process(true)
+          return
+        }
+
+        await processor.forEachMaterialChannel(piece.metadata, (material, channel) => {
+          const file = getMaterialChannelFileName(material.id, channel.name, channel.hash)
+
+          if (!files.includes(file))
+            hasChanges = true
+        })
+
+        if (hasChanges) {
+          await processor.process(true)
+        }
+      }
     }
   }
 

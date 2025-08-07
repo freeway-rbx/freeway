@@ -1,4 +1,4 @@
-import {ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationPiece} from '@main/_config'
 import {PieceEventEnum} from '@main/piece/enum'
 import {Piece} from '@main/piece/piece'
 import {PieceProvider} from '@main/piece/piece.provider'

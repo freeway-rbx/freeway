@@ -1,6 +1,6 @@
 import {join, parse} from 'node:path'
 import process from 'node:process'
-import {ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationPiece} from '@main/_config'
 import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'

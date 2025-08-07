@@ -1,5 +1,5 @@
 import {Operation} from '@common/queue/PBetterQueue'
-import {ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationPiece} from '@main/_config'
 import {Injectable, Logger} from '@nestjs/common'
 import {BaseOptions, BasePayload, BaseQueue} from './base.queue'
 

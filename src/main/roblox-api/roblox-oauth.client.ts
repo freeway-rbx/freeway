@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 
 import {URL} from 'node:url'
-import {ConfigurationRoblox} from '@main/_config/configuration'
+import {ConfigurationRoblox} from '@main/_config'
 import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto'
 import {Injectable, Logger, UnauthorizedException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'

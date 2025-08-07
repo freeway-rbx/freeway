@@ -1,5 +1,5 @@
 import {join} from 'node:path'
-import {ConfigurationLog} from '@main/_config/configuration'
+import {ConfigurationLog} from '@main/_config'
 import {Module} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {utilities as nestWinstonModuleUtilities, WinstonModule} from 'nest-winston'

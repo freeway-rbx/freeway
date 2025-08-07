@@ -14,6 +14,7 @@ export interface Node {
 
 export interface RbxRoot extends Node {
   materials?: RbxMaterial[]
+  isMesh: false
 }
 
 export interface RbxScene extends Node {

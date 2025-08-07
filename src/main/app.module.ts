@@ -1,10 +1,10 @@
+import {configure} from '@main/_config'
 import {Module} from '@nestjs/common'
 import {ConfigModule} from '@nestjs/config'
 import {APP_FILTER} from '@nestjs/core'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {ScheduleModule} from '@nestjs/schedule'
 import {SentryModule} from '@sentry/nestjs/setup'
-import {configuration} from './_config/configuration'
 import {AnalyticsService} from './analytics/analytics.service'
 import {AppUpdaterModule} from './app-updater/app-updater.module'
 import {AppController} from './app.controller'
@@ -15,8 +15,7 @@ import {LogModule} from './log/log.module'
 import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
-import{AllExceptionsFilter} from './utils/sentry.filter'
-
+import {AllExceptionsFilter} from './utils/sentry.filter'
 
 @Module({
   imports: [
@@ -25,7 +24,7 @@ import{AllExceptionsFilter} from './utils/sentry.filter'
     ElectronModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [configuration],
+      load: [configure],
     }),
     EventEmitterModule.forRoot({
       wildcard: true,

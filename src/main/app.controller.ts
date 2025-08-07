@@ -1,6 +1,6 @@
 import process from 'node:process'
 import {IpcOn} from '@doubleshot/nest-electron'
-import {ConfigurationLog, ConfigurationPiece} from '@main/_config/configuration'
+import {ConfigurationLog, ConfigurationPiece} from '@main/_config'
 import {RESOURCES_DIR, STUDIO_LINKS_DIR, STUDIO_PLUGINS_DIR} from '@main/utils'
 import {Controller, Get} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
