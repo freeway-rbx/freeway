@@ -56,10 +56,10 @@ export class PieceGltfService implements OnModuleInit {
   async getMeshRaw(piece: Piece, key: string) {
     const node = await this.getMesh(piece, key)
 
-    const meshFileName = getNodeFullPath(piece, node.id, node.hash)
-    // TODO what if file does not exist?
+    const fullPath = getNodeFullPath(piece, node.id, node.hash)
+    await this.ensureFileExists(piece, fullPath)
 
-    return fse.readJSON(meshFileName)
+    return fse.readJSON(fullPath)
   }
 
   async getMaterial(piece: Piece, materialId: string): Promise<RbxMaterial> {
@@ -102,7 +102,17 @@ export class PieceGltfService implements OnModuleInit {
       throw new NotFoundException()
     }
 
-    return await getRbxImageBitmapBase64(getMaterialChannelFullPath(piece, material.id, channel.name, channel.hash))
+    const fullPath = getMaterialChannelFullPath(piece, material.id, channel.name, channel.hash)
+    await this.ensureFileExists(piece, fullPath)
+
+    return await getRbxImageBitmapBase64(fullPath)
+  }
+
+  async ensureFileExists(piece: Piece, fullPath: string): Promise<void> {
+    const exists = await fse.pathExists(fullPath)
+    if (!exists) {
+      await this.tryProcess(piece)
+    }
   }
 
   async upsertMaterialChannelUpload(piece: Piece, materialChannel: RbxMaterialChannel, dto: UpsertPieceUploadDto) {
