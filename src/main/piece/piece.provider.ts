@@ -6,12 +6,16 @@ import {hashFromFile, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import fse from 'fs-extra'
+import PQueue from 'p-queue'
 import {NewPieceDto, Piece} from './piece'
 
 type PieceCriteria = any // PieceFieldCriteria | ((piece: Piece) => boolean)
 
 @Injectable()
 export class PieceProvider {
+  private saveQueue = new PQueue({concurrency: 1})
+  private savePromise: Promise<void> = null
+
   private readonly data: Piece[] = []
 
   private readonly logger = new Logger(PieceProvider.name)
@@ -65,6 +69,16 @@ export class PieceProvider {
   }
 
   async save(): Promise<void> {
+    if (this.saveQueue.pending === 0) {
+      this.savePromise = this.saveQueue.add(() => {
+        return this._save()
+      })
+    }
+
+    return this.savePromise
+  }
+
+  async _save(): Promise<void> {
     try {
       const data = JSON.stringify(this.data, null, 2)
       await fse.writeFile(this.options.metadataPath, data, {encoding: 'utf8'})
@@ -198,7 +212,7 @@ export class PieceProvider {
     return piece.uploads.find(x => x.hash === piece.hash)
   }
 
-  private async generateUniqName(dir, name: string): Promise<string> {
+  private async generateUniqName(dir: string, name: string): Promise<string> {
     const parsed = parse(name)
     let i = 0
     let current = name
