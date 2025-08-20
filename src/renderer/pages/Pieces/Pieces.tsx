@@ -8,6 +8,7 @@ import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
 import PieceItem from './PieceItem/PieceItem'
+import {sendPieceCreatedEvent, sendPieceUpdatedEvent, sendPieceDeletedEvent} from '@/utils'
 
 function Loading() {
   return (
@@ -58,13 +59,43 @@ function Pieces() {
   }
 
   // TODO cuhuak: use enum PieceEventEnum, not string literals
-  useCustomEventListener<any>('piece.created', () => {
+  useCustomEventListener<any>('piece.created', (data) => {
+    console.log('[Pieces] piece.created event received with data:', data)
+    // Send analytics event if we have piece data
+    if (data) {
+      const extension = data.extension || data.name?.split('.').pop() || 'unknown'
+      const type = data.type || 'unknown'
+      console.log('[Pieces] Sending analytics for piece.created:', extension, type)
+      sendPieceCreatedEvent(extension, type).catch(console.warn)
+    } else {
+      console.log('[Pieces] No piece data found in piece.created event')
+    }
     getApiPieces()
   })
-  useCustomEventListener<any>('piece.updated', () => {
+  useCustomEventListener<any>('piece.updated', (data) => {
+    console.log('[Pieces] piece.updated event received with data:', data)
+    // Send analytics event if we have piece data
+    if (data) {
+      const extension = data.extension || data.name?.split('.').pop() || 'unknown'
+      const type = data.type || 'unknown'
+      console.log('[Pieces] Sending analytics for piece.updated:', extension, type)
+      sendPieceUpdatedEvent(extension, type).catch(console.warn)
+    } else {
+      console.log('[Pieces] No piece data found in piece.updated event')
+    }
     getApiPieces()
   })
-  useCustomEventListener<any>('piece.deleted', () => {
+  useCustomEventListener<any>('piece.deleted', (data) => {
+    console.log('[Pieces] piece.deleted event received with data:', data)
+    // Send analytics event if we have piece data
+    if (data) {
+      const extension = data.extension || data.name?.split('.').pop() || 'unknown'
+      const type = data.type || 'unknown'
+      console.log('[Pieces] Sending analytics for piece.deleted:', extension, type)
+      sendPieceDeletedEvent(extension, type).catch(console.warn)
+    } else {
+      console.log('[Pieces] No piece data found in piece.deleted event')
+    }
     getApiPieces()
   })
   useCustomEventListener<any>('piece.changed', () => {

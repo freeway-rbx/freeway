@@ -19,9 +19,16 @@ const electron = {
     cb(msg)
   }),
 
-  onIpcMessage: (cb: (event: {name: string, data: any}) => any) => ipcRenderer.on('ipc-message', (_, event: {name: string, data: any}) => {
-    cb(event)
-  }),
+  onIpcMessage: (cb: (event: {name: string, data: any}) => any) => {
+    const listener = (_, event: {name: string, data: any}) => {
+      cb(event)
+    }
+    ipcRenderer.on('ipc-message', listener)
+    // Return a cleanup function
+    return () => {
+      ipcRenderer.removeListener('ipc-message', listener)
+    }
+  },
   sendAnalyticsEvent: (event: string, params: Record<string, any>) =>
     ipcRenderer.invoke('ga:send', event, params),
 }

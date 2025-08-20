@@ -1,4 +1,3 @@
-import {AnalyticsService} from '@main/analytics/analytics.service'
 import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
@@ -15,8 +14,7 @@ export class AppService implements OnModuleInit {
 
   constructor(
     private readonly oauthClient: RobloxOauthClient,
-    private readonly electronService: ElectronService,
-    private readonly analytics: AnalyticsService
+    private readonly electronService: ElectronService
   ) {
     //
   }
@@ -76,13 +74,11 @@ export class AppService implements OnModuleInit {
     if (isOnline && !this._isOnline) {
       this.logger.log('ONLINE')
       this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:online'})
-      this.analytics.sendEvent('app_online', {})
     }
 
     if (!isOnline && this._isOnline) {
       this.logger.log('OFFLINE')
       this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:offline'})
-      this.analytics.sendEvent('app_offline', {})
     }
 
     this._isOnline = isOnline

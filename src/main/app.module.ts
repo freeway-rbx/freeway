@@ -5,7 +5,6 @@ import {APP_FILTER} from '@nestjs/core'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {ScheduleModule} from '@nestjs/schedule'
 import {SentryModule} from '@sentry/nestjs/setup'
-import {AnalyticsService} from './analytics/analytics.service'
 import {AppUpdaterModule} from './app-updater/app-updater.module'
 import {AppController} from './app.controller'
 import {AppService} from './app.service'
@@ -43,10 +42,6 @@ import {AllExceptionsFilter} from './utils/sentry.filter'
       useClass: AllExceptionsFilter,
     },
     AppService,
-    AnalyticsService,
-  ],
-  exports: [
-    AnalyticsService,
   ],
 })
 export class AppModule {}

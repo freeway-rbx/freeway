@@ -1,18 +1,17 @@
-// This should always be first!
-import './sentry'
-
 import type {MicroserviceOptions} from '@nestjs/microservices'
+
 import process from 'node:process'
 import {ElectronIpcTransport} from '@doubleshot/nest-electron'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
-import {app as electronApp, ipcMain} from 'electron'
+import {app as electronApp} from 'electron'
 import {json, urlencoded} from 'express'
 import {WINSTON_MODULE_NEST_PROVIDER} from 'nest-winston'
-import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
-import {AnalyticsService} from './analytics/analytics.service'
+import {ConfigurationCors, ConfigurationMain} from './_config'
 import {AppModule} from './app.module'
+// This should always be first!
+import './sentry'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -53,12 +52,6 @@ async function bootstrap() {
 
     const mainConfig = config.get<ConfigurationMain>('main')
     await nestApp.listen(mainConfig.port, mainConfig.host)
-
-    const analytics = nestApp.get(AnalyticsService)
-
-    ipcMain.handle('ga:send', async (_event, eventName: string, params: Record<string, any>) => {
-      await analytics.sendEvent(eventName, params)
-    })
 
     const isDev = !electronApp.isPackaged
     electronApp.on('window-all-closed', async () => {

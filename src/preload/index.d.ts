@@ -11,7 +11,7 @@ interface MyElectron {
   getAccount: () => Promise<object>
   sendMsg: (msg: string) => Promise<string>
   onReplyMsg: (cb: (msg: string) => any) => void
-  onIpcMessage: (cb: (msg: {name: string, data: any}) => any) => void
+  onIpcMessage: (cb: (msg: {name: string, data: any}) => any) => (() => void)
 }
 
 declare global {

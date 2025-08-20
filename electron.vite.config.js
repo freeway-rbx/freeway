@@ -5,9 +5,6 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import 'dotenv/config'
 
 
-console.log('GA_MEASUREMENT_ID:', process.env.GA_MEASUREMENT_ID)
-
-
 export default defineConfig({
   main: {
     resolve: {
@@ -19,8 +16,6 @@ export default defineConfig({
     },
     plugins: [externalizeDepsPlugin(), swcPlugin()],
     define: {
-      __GA_MEASUREMENT_ID__: JSON.stringify(process.env.GA_MEASUREMENT_ID),
-      __GA_API_SECRET__: JSON.stringify(process.env.GA_API_SECRET),
       __VITE_SENTRY_DSN__: JSON.stringify(process.env.VITE_SENTRY_DSN),
     },
   },

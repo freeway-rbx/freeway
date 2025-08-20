@@ -15,5 +15,17 @@ export default async (): Promise<Config> => {
     collectCoverageFrom: ['**/*.(t|j)s'],
     coverageDirectory: '../coverage',
     testEnvironment: 'node',
+    projects: [
+      {
+        displayName: 'node',
+        testEnvironment: 'node',
+        testMatch: ['<rootDir>/**/*.spec.ts', '!<rootDir>/renderer/**/*.spec.ts'],
+      },
+      {
+        displayName: 'jsdom',
+        testEnvironment: 'jsdom',
+        testMatch: ['<rootDir>/renderer/**/*.spec.ts'],
+      },
+    ],
   }
 }

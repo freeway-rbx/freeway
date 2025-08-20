@@ -7,12 +7,34 @@ import {HashRouter} from 'react-router-dom'
 import {SearchProvider} from './contexts/SearchContext/SearchContext'
 import {AuthProvider} from './providers'
 import {Router} from './router'
+import {useEffect} from 'react'
+import {initAnalytics} from './utils'
 
 function App() {
-  window.electron.onIpcMessage((message) => {
-    console.log(`[App] emit custom event ${message.name}`)
-    emitCustomEvent(message.name || 'unknown-message', message.data)
-  })
+  useEffect(() => {
+    // App initialization
+    console.log('[App] Initialized')
+    
+    // Initialize Google Analytics
+    initAnalytics().catch(error => {
+      console.warn('[App] Failed to initialize analytics:', error)
+    })
+
+    // Set up IPC message listener
+    const handleIpcMessage = (message: any) => {
+      console.log(`[App] emit custom event ${message.name}`)
+      emitCustomEvent(message.name || 'unknown-message', message.data)
+    }
+
+    const cleanup = window.electron.onIpcMessage(handleIpcMessage)
+
+    // Cleanup function to remove the listener
+    return () => {
+      if (cleanup) {
+        cleanup()
+      }
+    }
+  }, [])
 
   // const { isAuthenticated, user, signOut, signIn } = useSession()
 

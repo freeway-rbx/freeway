@@ -1,6 +1,5 @@
 import {RobloxApiModule} from '@main/roblox-api/roblox-api.module'
 import {Module} from '@nestjs/common'
-import {AnalyticsService} from '@main/analytics/analytics.service'
 import {PieceController} from './piece.controller'
 import {PieceProvider} from './piece.provider'
 import {PieceUploadQueue, PieceWatcherQueue} from './queue'
@@ -26,7 +25,6 @@ import {PieceWatcher} from './watcher'
     PieceService,
     PieceWatcher,
     PieceGltfService,
-    AnalyticsService,
   ],
   controllers: [PieceController],
   imports: [RobloxApiModule],
